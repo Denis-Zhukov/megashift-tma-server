@@ -40,7 +40,9 @@ export class TmaGuard implements CanActivate {
       throw new UnauthorizedException('Invalid Token');
     }
 
-    req.user = deepSnakeToCamelObjKeys(parse(initData));
+    const data = deepSnakeToCamelObjKeys(parse(initData));
+
+    req.user = data.user;
 
     return true;
   }

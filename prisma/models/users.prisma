@@ -1,5 +1,5 @@
 model User {
-  id         String   @id @default(uuid())
+  id         BigInt   @id
   name       String
   surname    String
   patronymic String?

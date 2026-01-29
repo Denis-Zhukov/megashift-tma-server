@@ -1,15 +1,14 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { TmaGuard } from '../guards/tma.guard';
+import { Request } from 'express';
 
-@UseGuards(TmaGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
+    return this.userService.create(req.user.id, createUserDto);
   }
 }
