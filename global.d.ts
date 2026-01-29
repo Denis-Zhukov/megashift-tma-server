@@ -12,7 +12,7 @@ type SnakeToCamelObject<T> = T extends object
     }
   : T;
 
-type UserCamelCase = SnakeToCamelObject<User>;
+type UserCamelCase = Omit<SnakeToCamelObject<User>, 'id'> & { id: string };
 
 declare global {
   namespace Express {
