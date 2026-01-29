@@ -13,8 +13,16 @@ import {
 @Injectable()
 export class TmaGuard implements CanActivate {
   private readonly BOT_TOKEN = process.env.BOT_TOKEN!;
+  private readonly isDev = process.env.NODE_ENV !== 'production';
 
   canActivate(context: ExecutionContext): boolean {
+    if (this.isDev) {
+      const req = context.switchToHttp().getRequest();
+
+      req.user = this.createMockUserData();
+      return true;
+    }
+
     const req = context.switchToHttp().getRequest();
     const auth = req.headers['authorization'];
 
@@ -35,5 +43,22 @@ export class TmaGuard implements CanActivate {
     req.user = deepSnakeToCamelObjKeys(parse(initData));
 
     return true;
+  }
+
+  private createMockUserData() {
+    return {
+      user: {
+        id: 123456789,
+        firstName: 'Dev',
+        lastName: 'User',
+        username: 'dev_user',
+        languageCode: 'en',
+        isPremium: true,
+        allowsWriteToPm: true,
+      },
+      queryId: 'dev_query_id_123',
+      authDate: new Date(),
+      hash: 'dev_mock_hash',
+    };
   }
 }
