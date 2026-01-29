@@ -24,7 +24,7 @@ export class TmaGuard implements CanActivate {
     }
 
     const req = context.switchToHttp().getRequest();
-    const auth = req.headers['authorization'];
+    const auth: string = req.headers['authorization'];
 
     if (!auth) {
       throw new UnauthorizedException('No Authorization header');
@@ -36,6 +36,7 @@ export class TmaGuard implements CanActivate {
 
     const initData = auth.replace(/^tma\s/, '');
 
+    console.log(initData, this.BOT_TOKEN);
     if (!isValid(initData, this.BOT_TOKEN)) {
       throw new UnauthorizedException('Invalid Token');
     }
