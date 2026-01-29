@@ -36,14 +36,16 @@ export class TmaGuard implements CanActivate {
 
     const initData = auth.replace(/^tma\s/, '');
 
-    console.log(initData, this.BOT_TOKEN);
     if (!isValid(initData, this.BOT_TOKEN)) {
       throw new UnauthorizedException('Invalid Token');
     }
 
     const data = deepSnakeToCamelObjKeys(parse(initData));
 
-    req.user = data.user;
+    req.user = {
+      ...data.user,
+      id: String(data.user.id),
+    };
 
     return true;
   }

@@ -14,4 +14,15 @@ export class UserService {
       },
     });
   }
+
+  async checkRegistration(tgUserId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: tgUserId },
+    });
+
+    return {
+      isRegistered: !!user,
+      user: user || null,
+    };
+  }
 }
