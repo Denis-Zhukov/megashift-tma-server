@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { TmaGuard } from './guards/tma.guard';
+import { WinstonLogger } from './logger/winston-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,9 @@ async function bootstrap() {
   );
 
   app.useGlobalGuards(new TmaGuard());
+
+  const logger = new WinstonLogger();
+  app.useLogger(logger);
 
   await app.listen(8000);
 }

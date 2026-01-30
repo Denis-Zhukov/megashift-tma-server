@@ -52,18 +52,15 @@ export class TmaGuard implements CanActivate {
 
   private createMockUserData() {
     return {
-      user: {
-        id: 123456789,
-        firstName: 'Dev',
-        lastName: 'User',
-        username: 'dev_user',
-        languageCode: 'en',
-        isPremium: true,
-        allowsWriteToPm: true,
-      },
-      queryId: 'dev_query_id_123',
-      authDate: new Date(),
-      hash: 'dev_mock_hash',
+      allowsWriteToPm: true,
+      firstName: 'Denis',
+      id: '1160368886',
+      isPremium: true,
+      lastName: 'Zhukov',
+      languageCode: 'ru',
+      photoUrl:
+        'https://t.me/i/userpic/320/pIgDdBcvL0ik_M-UrvDiZCtYWx1En2v5aFu3KTpzzDc.svg',
+      username: 'Denis_Zhukov_Hachiko',
     };
   }
 }
