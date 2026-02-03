@@ -7,22 +7,32 @@ export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(tgUserId: string, createUserDto: CreateUserDto) {
-    return this.prisma.user.create({
+    const createdUser = await this.prisma.user.create({
       data: {
         ...createUserDto,
         id: tgUserId,
       },
     });
+
+    return {
+      name: createdUser.name,
+      surname: createdUser.surname,
+      patronymic: createdUser.patronymic,
+      createdAt: createdUser.createdAt,
+    };
   }
 
   async checkRegistration(tgUserId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: tgUserId },
+      select: {
+        name: true,
+        surname: true,
+        patronymic: true,
+        createdAt: true,
+      },
     });
 
-    return {
-      isRegistered: !!user,
-      user: user || null,
-    };
+    return { user: user || null };
   }
 }
