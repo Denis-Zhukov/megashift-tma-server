@@ -33,6 +33,6 @@ export class UserService {
       },
     });
 
-    return { user: user || null };
+    return user ?? null;
   }
 }
