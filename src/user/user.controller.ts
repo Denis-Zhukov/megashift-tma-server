@@ -14,6 +14,6 @@ export class UserController {
 
   @Get('check-registration')
   async checkRegistration(@Req() req: Request) {
-    return this.userService.checkRegistration(req.user.id);
+    return this.userService.getById(req.user.id);
   }
 }
