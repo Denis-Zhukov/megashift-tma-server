@@ -20,8 +20,6 @@ CREATE TABLE "shift_templates" (
     "color" TEXT,
     "start_time" TIME NOT NULL,
     "end_time" TIME NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "shift_templates_pkey" PRIMARY KEY ("id")
 );

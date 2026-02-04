@@ -8,9 +8,6 @@ model ShiftTemplate {
   startTime DateTime @map("start_time") @db.Time
   endTime   DateTime @map("end_time") @db.Time
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   schedule Schedule[]
