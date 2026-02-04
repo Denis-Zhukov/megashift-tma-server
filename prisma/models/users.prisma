@@ -9,5 +9,8 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  shiftTemplates ShiftTemplate[]
+  schedule       Schedule[]
+
   @@map("users")
 }
