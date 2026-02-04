@@ -14,7 +14,6 @@ export class ShiftTemplatesService {
   async getTemplatesByUserId(userId: string) {
     return this.prisma.shiftTemplate.findMany({
       where: { userId },
-      orderBy: { createdAt: 'asc' },
     });
   }
 
