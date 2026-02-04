@@ -19,24 +19,26 @@ export class ShiftTemplatesService {
   }
 
   async createTemplateByUserId(userId: string, dto: CreateTemplateDto) {
-    const templatesCount = await this.prisma.shiftTemplate.count({
-      where: { userId },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const count = await tx.shiftTemplate.count({
+        where: { userId },
+      });
 
-    if (templatesCount >= 10) {
-      throw new BadRequestException(
-        'Maximum number of shift templates (10) reached',
-      );
-    }
+      if (count >= 10) {
+        throw new BadRequestException(
+          'Maximum number of shift templates (10) reached',
+        );
+      }
 
-    return this.prisma.shiftTemplate.create({
-      data: {
-        userId,
-        label: dto.label,
-        color: dto.color,
-        startTime: timeStringToDate(dto.startTime),
-        endTime: timeStringToDate(dto.endTime),
-      },
+      return tx.shiftTemplate.create({
+        data: {
+          userId,
+          label: dto.label,
+          color: dto.color,
+          startTime: timeStringToDate(dto.startTime),
+          endTime: timeStringToDate(dto.endTime),
+        },
+      });
     });
   }
 
