@@ -4,6 +4,7 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  Matches,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -28,4 +29,11 @@ export class CreateUserDto {
   @MaxLength(50, { message: 'Patronymic must not exceed 50 characters' })
   @Transform(({ value }) => value?.trim())
   patronymic?: string;
+
+  @IsString()
+  @Matches(/^[a-zA-Z]+\/[a-zA-Z_]+$/, {
+    message: 'Timezone must be a valid IANA string, e.g. "Europe/Moscow"',
+  })
+  @Transform(({ value }) => value?.trim())
+  timezone: string = 'UTC';
 }

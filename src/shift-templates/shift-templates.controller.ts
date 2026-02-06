@@ -21,6 +21,14 @@ export class ShiftTemplatesController {
     return this.shiftTemplatesService.getTemplatesByUserId(req.user.id);
   }
 
+  @Get(':id')
+  getById(@Req() req: Request, @Param('id') id: string) {
+    return this.shiftTemplatesService.getTemplateByUserIdAndById(
+      req.user.id,
+      id,
+    );
+  }
+
   @Post()
   create(@Req() req: Request, @Body() dto: CreateTemplateDto) {
     return this.shiftTemplatesService.createTemplateByUserId(req.user.id, dto);

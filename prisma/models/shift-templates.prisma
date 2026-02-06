@@ -5,8 +5,8 @@ model ShiftTemplate {
   label String
   color String?
 
-  startTime DateTime @map("start_time") @db.Time
-  endTime   DateTime @map("end_time") @db.Time
+  startTime DateTime @map("start_time") @db.Time()
+  endTime   DateTime @map("end_time") @db.Time()
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

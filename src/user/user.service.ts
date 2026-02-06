@@ -13,6 +13,7 @@ export class UserService {
         name: true,
         surname: true,
         patronymic: true,
+        timezone: true,
       },
     });
   }
@@ -30,6 +31,7 @@ export class UserService {
       surname: createdUser.surname,
       patronymic: createdUser.patronymic,
       createdAt: createdUser.createdAt,
+      timezone: createdUser.timezone,
     };
   }
 }

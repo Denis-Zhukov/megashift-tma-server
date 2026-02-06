@@ -17,6 +17,12 @@ export class ShiftTemplatesService {
     });
   }
 
+  async getTemplateByUserIdAndById(userId: string, id: string) {
+    return this.prisma.shiftTemplate.findUnique({
+      where: { id, userId },
+    });
+  }
+
   async createTemplateByUserId(userId: string, dto: CreateTemplateDto) {
     return this.prisma.$transaction(async (tx) => {
       const count = await tx.shiftTemplate.count({
