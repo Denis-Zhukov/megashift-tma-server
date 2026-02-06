@@ -1,8 +1,23 @@
-export const timeStringToDate = (time: string) => {
-  const [hours, minutes] = time.split(':').map(Number);
+import { set } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 
-  const date = new Date(0);
-  date.setUTCHours(hours, minutes, 0, 0);
+/**
+ * @param timeStr — "HH:mm"
+ * @param userTimeZone — IANA‑таймзона, например "Europe/Moscow"
+ * @returns Дата в UTC
+ */
+export function timeStringToUtcDate(
+  timeStr: string,
+  userTimeZone: string,
+): Date {
+  const [hours, minutes] = timeStr.split(':').map(Number);
 
-  return date;
-};
+  const zonedDate = set(new Date(1970, 0, 1), {
+    hours,
+    minutes,
+    seconds: 0,
+    milliseconds: 0,
+  });
+
+  return fromZonedTime(zonedDate, userTimeZone);
+}

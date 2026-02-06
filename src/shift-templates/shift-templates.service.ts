@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
-import { timeStringToDate } from '../utils/time-string-to-date';
+import { timeStringToUtcDate } from '../utils/time-string-to-date';
 
 @Injectable()
 export class ShiftTemplatesService {
@@ -24,6 +24,12 @@ export class ShiftTemplatesService {
   }
 
   async createTemplateByUserId(userId: string, dto: CreateTemplateDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timezone: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
     return this.prisma.$transaction(async (tx) => {
       const count = await tx.shiftTemplate.count({
         where: { userId },
@@ -40,8 +46,8 @@ export class ShiftTemplatesService {
           userId,
           label: dto.label,
           color: dto.color,
-          startTime: timeStringToDate(dto.startTime),
-          endTime: timeStringToDate(dto.endTime),
+          startTime: timeStringToUtcDate(dto.startTime, user.timezone),
+          endTime: timeStringToUtcDate(dto.endTime, user.timezone),
         },
       });
     });
@@ -52,6 +58,12 @@ export class ShiftTemplatesService {
     templateId: string,
     dto: CreateTemplateDto,
   ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timezone: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
     const exists = await this.prisma.shiftTemplate.findUnique({
       where: {
         id: templateId,
@@ -68,8 +80,8 @@ export class ShiftTemplatesService {
       data: {
         label: dto.label,
         color: dto.color,
-        startTime: timeStringToDate(dto.startTime),
-        endTime: timeStringToDate(dto.endTime),
+        startTime: timeStringToUtcDate(dto.startTime, user.timezone),
+        endTime: timeStringToUtcDate(dto.endTime, user.timezone),
       },
     });
   }
