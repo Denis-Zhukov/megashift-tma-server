@@ -10,7 +10,7 @@ model ShiftTemplate {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  schedule Schedule[]
+  shifts Shift[]
 
   @@map("shift_templates")
 }

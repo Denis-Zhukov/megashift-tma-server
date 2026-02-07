@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { ShiftTemplatesModule } from './shift-templates/shift-templates.module';
+import { ShiftModule } from './shift/shift.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ShiftTemplatesModule } from './shift-templates/shift-templates.module';
     PrismaModule,
     ProfileModule,
     ShiftTemplatesModule,
+    ShiftModule,
   ],
 })
 export class AppModule {}

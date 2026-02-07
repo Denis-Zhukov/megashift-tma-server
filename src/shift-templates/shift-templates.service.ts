@@ -14,12 +14,26 @@ export class ShiftTemplatesService {
   async getTemplatesByUserId(userId: string) {
     return this.prisma.shiftTemplate.findMany({
       where: { userId },
+      select: {
+        id: true,
+        label: true,
+        startTime: true,
+        endTime: true,
+        color: true,
+      },
     });
   }
 
   async getTemplateByUserIdAndById(userId: string, id: string) {
     return this.prisma.shiftTemplate.findUnique({
       where: { id, userId },
+      select: {
+        id: true,
+        label: true,
+        startTime: true,
+        endTime: true,
+        color: true,
+      },
     });
   }
 

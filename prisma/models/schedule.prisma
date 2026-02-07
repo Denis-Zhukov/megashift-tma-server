@@ -1,4 +1,4 @@
-model Schedule {
+model Shift {
   id String @id @default(uuid())
 
   userId          String  @map("user_id")
@@ -15,5 +15,6 @@ model Schedule {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   shiftTemplate ShiftTemplate? @relation(fields: [shiftTemplateId], references: [id], onDelete: SetNull)
 
-  @@map("schedule")
+  @@index([userId, date])
+  @@map("shifts")
 }
