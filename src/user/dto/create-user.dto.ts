@@ -31,7 +31,7 @@ export class CreateUserDto {
   patronymic?: string;
 
   @IsString()
-  @Matches(/^[a-zA-Z]+\/[a-zA-Z_]+$/, {
+  @Matches(/(^[a-zA-Z]+\/[a-zA-Z_]+$|UTC)/, {
     message: 'Timezone must be a valid IANA string, e.g. "Europe/Moscow"',
   })
   @Transform(({ value }) => value?.trim())
