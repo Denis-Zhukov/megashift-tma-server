@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { fromZonedTime } from 'date-fns-tz';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { endOfMonth, startOfMonth } from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
 
 type FindByMonthArgs = {
@@ -46,16 +46,11 @@ export class ShiftService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    const dateUtc = fromZonedTime(
-      new Date(`${dto.date}T00:00:00`),
-      user.timezone,
-    );
-
     return this.prisma.shift.create({
       data: {
         userId,
         shiftTemplateId: dto.shiftTemplateId,
-        date: dateUtc,
+        date: `${dto.date}T00:00:00.000Z`,
       },
     });
   }
