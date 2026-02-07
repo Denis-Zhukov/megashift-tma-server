@@ -22,10 +22,11 @@ export class ShiftController {
     @Query('year') year: string,
     @Query('month') month: string,
   ) {
-    return this.shiftsService.findByMonth(req.user.id, {
-      year: Number(year),
-      month: Number(month),
-    });
+    return this.shiftsService.findByMonth(
+      req.user.id,
+      Number(year),
+      Number(month),
+    );
   }
 
   @Post()

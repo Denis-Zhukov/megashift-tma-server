@@ -4,16 +4,11 @@ import { fromZonedTime } from 'date-fns-tz';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
 
-type FindByMonthArgs = {
-  year: number;
-  month: number;
-};
-
 @Injectable()
 export class ShiftService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByMonth(userId: string, { year, month }: FindByMonthArgs) {
+  async findByMonth(userId: string, year: number, month: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { timezone: true },
