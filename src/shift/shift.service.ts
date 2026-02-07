@@ -54,4 +54,10 @@ export class ShiftService {
       },
     });
   }
+
+  async delete(userId: string, id: string) {
+    return this.prisma.shift.delete({
+      where: { id, userId },
+    });
+  }
 }
