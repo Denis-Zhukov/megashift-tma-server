@@ -32,7 +32,7 @@ export class ShiftService {
           lte: utcEnd,
         },
       },
-      orderBy: { date: 'asc' },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
