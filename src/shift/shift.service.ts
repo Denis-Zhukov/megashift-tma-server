@@ -58,24 +58,12 @@ export class ShiftService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    // Парсим дату как начало дня в локальной таймзоне пользователя
-    const localDate = new Date(`${dateStr}T00:00:00`);
-    const localStart = startOfDay(localDate);
-    const localEnd = endOfDay(localDate);
-
-    // Конвертируем в UTC границы дня
-    const utcStart = fromZonedTime(localStart, user.timezone);
-    const utcEnd = fromZonedTime(localEnd, user.timezone);
-
     return this.prisma.shift.findMany({
       where: {
         userId,
-        date: {
-          gte: utcStart,
-          lt: utcEnd,
-        },
+        date: `${dateStr}T00:00:00.000Z`,
       },
-      orderBy: { date: 'asc' },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
