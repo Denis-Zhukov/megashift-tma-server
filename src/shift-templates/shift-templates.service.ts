@@ -21,6 +21,9 @@ export class ShiftTemplatesService {
         endTime: true,
         color: true,
       },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
   }
 
@@ -101,8 +104,30 @@ export class ShiftTemplatesService {
   }
 
   async deleteTemplate(userId: string, templateId: string) {
-    return this.prisma.shiftTemplate.delete({
+    const template = await this.prisma.shiftTemplate.findUnique({
       where: { id: templateId, userId },
+    });
+
+    if (!template) {
+      throw new NotFoundException('Shift template not found');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.shift.updateMany({
+        where: {
+          userId,
+          shiftTemplateId: templateId,
+          AND: [{ actualStartTime: null }, { actualEndTime: null }],
+        },
+        data: {
+          actualStartTime: template.startTime,
+          actualEndTime: template.endTime,
+        },
+      });
+
+      return tx.shiftTemplate.delete({
+        where: { id: templateId, userId },
+      });
     });
   }
 }

@@ -12,5 +12,7 @@ model ShiftTemplate {
 
   shifts Shift[]
 
+  createdAt DateTime @default(now()) @map("created_at")
+
   @@map("shift_templates")
 }

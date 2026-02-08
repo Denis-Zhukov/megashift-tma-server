@@ -1,3 +1,4 @@
+// shift.controller.ts
 import {
   Controller,
   Get,
@@ -27,6 +28,11 @@ export class ShiftController {
       Number(year),
       Number(month),
     );
+  }
+
+  @Get('date')
+  async findByDay(@Req() req: Request, @Query('date') date: string) {
+    return this.shiftsService.findByDay(req.user.id, date);
   }
 
   @Post()

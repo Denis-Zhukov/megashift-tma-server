@@ -1,7 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { fromZonedTime } from 'date-fns-tz';
-import { addDays, endOfMonth, startOfMonth, subDays } from 'date-fns';
+import {
+  addDays,
+  endOfMonth,
+  startOfMonth,
+  subDays,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
 
 @Injectable()
@@ -32,7 +43,39 @@ export class ShiftService {
           lte: utcEnd,
         },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { date: 'asc' },
+    });
+  }
+
+  async findByDay(userId: string, dateStr: string) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      throw new BadRequestException('Date must be in YYYY-MM-DD format');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timezone: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    // Парсим дату как начало дня в локальной таймзоне пользователя
+    const localDate = new Date(`${dateStr}T00:00:00`);
+    const localStart = startOfDay(localDate);
+    const localEnd = endOfDay(localDate);
+
+    // Конвертируем в UTC границы дня
+    const utcStart = fromZonedTime(localStart, user.timezone);
+    const utcEnd = fromZonedTime(localEnd, user.timezone);
+
+    return this.prisma.shift.findMany({
+      where: {
+        userId,
+        date: {
+          gte: utcStart,
+          lt: utcEnd,
+        },
+      },
+      orderBy: { date: 'asc' },
     });
   }
 
@@ -41,7 +84,6 @@ export class ShiftService {
       where: { id: userId },
       select: { timezone: true },
     });
-
     if (!user) throw new NotFoundException('User not found');
 
     return this.prisma.shift.create({
