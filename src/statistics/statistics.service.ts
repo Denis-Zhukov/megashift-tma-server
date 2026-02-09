@@ -19,7 +19,6 @@ type ShiftStatsItemHours = {
 export class StatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // ------------------- КОЛИЧЕСТВО СМЕН -------------------
   async getShiftsByTemplate(
     userId: string,
     year: number,
