@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { ShiftTemplatesModule } from './shift-templates/shift-templates.module';
 import { ShiftModule } from './shift/shift.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ShiftModule } from './shift/shift.module';
     ProfileModule,
     ShiftTemplatesModule,
     ShiftModule,
+    StatisticsModule,
   ],
 })
 export class AppModule {}

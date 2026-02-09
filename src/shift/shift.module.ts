@@ -5,6 +5,6 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
   controllers: [ShiftController],
-  providers: [ShiftService, PrismaService]
+  providers: [ShiftService, PrismaService],
 })
 export class ShiftModule {}
