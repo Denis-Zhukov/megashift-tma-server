@@ -1,11 +1,15 @@
-import { IsString, IsISO8601 } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 
 export class UpdateShiftDto {
   @IsString()
-  @IsISO8601()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'startTime must be in HH:mm format',
+  })
   actualStartTime?: string | null;
 
   @IsString()
-  @IsISO8601()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'startTime must be in HH:mm format',
+  })
   actualEndTime?: string | null;
 }

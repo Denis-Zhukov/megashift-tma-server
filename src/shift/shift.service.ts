@@ -8,6 +8,7 @@ import { fromZonedTime } from 'date-fns-tz';
 import { addDays, endOfMonth, startOfMonth, subDays } from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
+import { timeStringToUtcDate } from '../utils/time-string-to-date';
 
 @Injectable()
 export class ShiftService {
@@ -77,9 +78,15 @@ export class ShiftService {
     });
   }
 
-  async update(userId: string, shiftId: string, data: UpdateShiftDto) {
+  async update(userId: string, shiftId: string, dto: UpdateShiftDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timezone: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
     const existingShift = await this.prisma.shift.findUnique({
-      where: { id: shiftId },
+      where: { id: shiftId, userId },
     });
     if (!existingShift || existingShift.userId !== userId) {
       throw new NotFoundException('Shift not found for this user');
@@ -87,7 +94,13 @@ export class ShiftService {
 
     return this.prisma.shift.update({
       where: { id: shiftId },
-      data,
+      data: {
+        actualStartTime: timeStringToUtcDate(
+          dto.actualStartTime,
+          user.timezone,
+        ),
+        actualEndTime: timeStringToUtcDate(dto.actualEndTime, user.timezone),
+      },
     });
   }
 
