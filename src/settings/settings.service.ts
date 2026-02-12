@@ -12,7 +12,18 @@ export class SettingsService {
       data: {
         salary: dto.salary,
         typeSalary: dto.typeSalary,
-        maxSalary: dto.maxSalary,
+        maxSalary: dto.maxSalary ?? null,
+      },
+    });
+  }
+
+  async getSettings(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        salary: true,
+        typeSalary: true,
+        maxSalary: true
       },
     });
   }
