@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "SalaryType" AS ENUM ('HOURLY', 'SHIFT', 'MONTHLY');
+
 -- CreateTable
 CREATE TABLE "shift_templates" (
     "id" TEXT NOT NULL,
@@ -32,6 +35,8 @@ CREATE TABLE "users" (
     "surname" TEXT NOT NULL,
     "patronymic" TEXT,
     "timezone" TEXT NOT NULL DEFAULT 'UTC',
+    "salary" DOUBLE PRECISION,
+    "typeSalary" "SalaryType",
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
