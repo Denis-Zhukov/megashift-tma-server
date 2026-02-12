@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum SalaryType {
@@ -17,4 +17,10 @@ export class UpdateSalaryDto {
   @IsNumber({}, { message: 'salary должен быть числом' })
   @Min(0, { message: 'salary не может быть отрицательным' })
   salary: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'Salary должен быть числом' })
+  @Min(0, { message: 'maxSalary не может быть отрицательным' })
+  maxSalary: number;
 }

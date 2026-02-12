@@ -12,6 +12,7 @@ export class SettingsService {
       data: {
         salary: dto.salary,
         typeSalary: dto.typeSalary,
+        maxSalary: dto.maxSalary,
       },
     });
   }

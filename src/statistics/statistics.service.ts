@@ -86,7 +86,6 @@ export class StatisticsService {
     return result;
   }
 
-  // ------------------- ЧАСЫ -------------------
   async getShiftsHoursByTemplate(
     userId: string,
     year: number,
@@ -153,11 +152,72 @@ export class StatisticsService {
       result.push({
         id: '0',
         color: '#ffbbee',
-        shiftName: '(Без шаблона смены)',
+        shiftName: '(Без названия)',
         hours: withoutTemplateHours,
       });
     }
 
     return result;
+  }
+
+  async getSalaryForMonth(userId: string, year: number, month: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        salary: true,
+        typeSalary: true,
+        maxSalary: true,
+      },
+    });
+
+    if (!user || user.salary === null || !user.typeSalary) {
+      return { salary: 0, typeSalary: 'UNKNOWN' };
+    }
+
+    let totalSalary = 0;
+
+    if (user.typeSalary === 'MONTHLY') {
+      totalSalary = user.salary;
+    } else if (user.typeSalary === 'SHIFT') {
+      const shiftCount = await this.prisma.shift.count({
+        where: {
+          userId,
+          date: {
+            gte: new Date(Date.UTC(year, month - 1, 1)),
+            lt: new Date(Date.UTC(year, month, 1)),
+          },
+        },
+      });
+      totalSalary = shiftCount * user.salary;
+    } else if (user.typeSalary === 'HOURLY') {
+      const shifts = await this.prisma.shift.findMany({
+        where: {
+          userId,
+          date: {
+            gte: new Date(Date.UTC(year, month - 1, 1)),
+            lt: new Date(Date.UTC(year, month, 1)),
+          },
+        },
+        include: {
+          shiftTemplate: true,
+        },
+      });
+
+      let totalHours = 0;
+      for (const shift of shifts) {
+        const start = shift.actualStartTime ?? shift.shiftTemplate?.startTime;
+        const end = shift.actualEndTime ?? shift.shiftTemplate?.endTime;
+        if (start && end) {
+          totalHours += (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+        }
+      }
+      totalSalary = totalHours * user.salary;
+    }
+
+    return {
+      salary: totalSalary,
+      typeSalary: user.typeSalary,
+      maxSalary: user.maxSalary,
+    };
   }
 }
