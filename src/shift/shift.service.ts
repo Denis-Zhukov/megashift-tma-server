@@ -5,15 +5,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { fromZonedTime } from 'date-fns-tz';
-import {
-  addDays,
-  endOfMonth,
-  startOfMonth,
-  subDays,
-  startOfDay,
-  endOfDay,
-} from 'date-fns';
+import { addDays, endOfMonth, startOfMonth, subDays } from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
+import { UpdateShiftDto } from './dto/update-shift.dto';
 
 @Injectable()
 export class ShiftService {
@@ -29,8 +23,8 @@ export class ShiftService {
     const monthStart = startOfMonth(new Date(year, month - 1));
     const monthEnd = endOfMonth(new Date(year, month - 1));
 
-    const localStart = subDays(monthStart, 7);
-    const localEnd = addDays(monthEnd, 7);
+    const localStart = subDays(monthStart, 14);
+    const localEnd = addDays(monthEnd, 14);
 
     const utcStart = fromZonedTime(localStart, user.timezone);
     const utcEnd = fromZonedTime(localEnd, user.timezone);
@@ -80,6 +74,20 @@ export class ShiftService {
         shiftTemplateId: dto.shiftTemplateId,
         date: `${dto.date}T00:00:00.000Z`,
       },
+    });
+  }
+
+  async update(userId: string, shiftId: string, data: UpdateShiftDto) {
+    const existingShift = await this.prisma.shift.findUnique({
+      where: { id: shiftId },
+    });
+    if (!existingShift || existingShift.userId !== userId) {
+      throw new NotFoundException('Shift not found for this user');
+    }
+
+    return this.prisma.shift.update({
+      where: { id: shiftId },
+      data,
     });
   }
 

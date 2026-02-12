@@ -8,10 +8,12 @@ import {
   Req,
   Delete,
   Param,
+  Patch,
 } from '@nestjs/common';
 import { ShiftService } from './shift.service';
 import { Request } from 'express';
 import { CreateShiftDto } from './dto/create-shift.dto';
+import { UpdateShiftDto } from './dto/update-shift.dto';
 
 @Controller('shifts')
 export class ShiftController {
@@ -38,6 +40,15 @@ export class ShiftController {
   @Post()
   async create(@Req() req: Request, @Body() dto: CreateShiftDto) {
     return this.shiftsService.create(req.user.id, dto);
+  }
+
+  @Patch(':id')
+  async update(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: UpdateShiftDto,
+  ) {
+    return this.shiftsService.update(req.user.id, id, dto);
   }
 
   @Delete(':id')
