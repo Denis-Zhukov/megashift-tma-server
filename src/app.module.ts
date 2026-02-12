@@ -6,6 +6,7 @@ import { ProfileModule } from './profile/profile.module';
 import { ShiftTemplatesModule } from './shift-templates/shift-templates.module';
 import { ShiftModule } from './shift/shift.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     ShiftTemplatesModule,
     ShiftModule,
     StatisticsModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}
