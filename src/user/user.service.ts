@@ -40,14 +40,15 @@ export class UserService {
     };
   }
 
-  async createInvite(ownerId: string) {
+  async createInvite(inviterId: string) {
     const id = randomUUID();
 
     const inviteData = {
-      id,
-      owner: ownerId,
       type: 'invite',
-      createdAt: Date.now(),
+      payload: {
+        inviterId,
+        access: 'view',
+      },
     };
 
     await this.redis.set(id, JSON.stringify(inviteData), {
