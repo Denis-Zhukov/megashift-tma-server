@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { randomUUID } from 'crypto';
-import { RedisClientType } from 'redis';
+import { RedisClientType, SetOptions } from 'redis';
 
 @Injectable()
 export class UserService {
@@ -50,7 +50,12 @@ export class UserService {
       createdAt: Date.now(),
     };
 
-    await this.redis.set(id, JSON.stringify(inviteData));
+    await this.redis.set(id, JSON.stringify(inviteData), {
+      expiration: {
+        type: 'EX',
+        value: 60 * 60,
+      },
+    } satisfies SetOptions);
 
     return { id };
   }
