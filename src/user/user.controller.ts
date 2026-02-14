@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Get } from '@nestjs/common';
+import { Controller, Post, Body, Req, Get, Param } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Request } from 'express';
@@ -15,5 +15,15 @@ export class UserController {
   @Get('check-registration')
   async checkRegistration(@Req() req: Request) {
     return this.userService.getById(req.user.id);
+  }
+
+  @Post('invite')
+  async createInvite(@Req() req: Request) {
+    return this.userService.createInvite(req.user.id);
+  }
+
+  @Get('invite/:id')
+  async getInvite(@Param('id') id: string) {
+    return this.userService.getInvite(id);
   }
 }

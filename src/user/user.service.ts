@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { randomUUID } from 'crypto';
+import { RedisClientType } from 'redis';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject('REDIS_CLIENT') private readonly redis: RedisClientType,
+  ) {}
 
   async getById(tgUserId: string) {
     return this.prisma.user.findUnique({
@@ -33,5 +38,30 @@ export class UserService {
       createdAt: createdUser.createdAt,
       timezone: createdUser.timezone,
     };
+  }
+
+  async createInvite(ownerId: string) {
+    const id = randomUUID();
+
+    const inviteData = {
+      id,
+      owner: ownerId,
+      type: 'invite',
+      createdAt: Date.now(),
+    };
+
+    await this.redis.set(id, JSON.stringify(inviteData));
+
+    return { id };
+  }
+
+  async getInvite(id: string) {
+    const data = await this.redis.get(id);
+
+    if (typeof data !== 'string') {
+      return null;
+    }
+
+    return JSON.parse(data);
   }
 }
