@@ -3,6 +3,23 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { randomUUID } from 'crypto';
 import { RedisClientType } from 'redis';
+import { GrantAccessDto } from './dto/grant-access.dto';
+
+export enum AccessClaim {
+  READ = 'READ',
+  EDIT_OWNER = 'EDIT_OWNER',
+  EDIT_SELF = 'EDIT_SELF',
+  DELETE_OWNER = 'DELETE_OWNER',
+  DELETE_SELF = 'DELETE_SELF',
+}
+
+type InviteObject = {
+  type: 'invite';
+  payload: {
+    inviterId: string;
+    claims: AccessClaim[];
+  };
+};
 
 @Injectable()
 export class UserService {
@@ -11,9 +28,9 @@ export class UserService {
     @Inject('REDIS_CLIENT') private readonly redis: RedisClientType,
   ) {}
 
-  async getById(tgUserId: string) {
+  async getById(userId: string) {
     return this.prisma.user.findUnique({
-      where: { id: tgUserId },
+      where: { id: userId },
       select: {
         name: true,
         surname: true,
@@ -23,11 +40,11 @@ export class UserService {
     });
   }
 
-  async create(tgUserId: string, createUserDto: CreateUserDto) {
+  async create(userId: string, createUserDto: CreateUserDto) {
     const createdUser = await this.prisma.user.create({
       data: {
         ...createUserDto,
-        id: tgUserId,
+        id: userId,
       },
     });
 
@@ -38,15 +55,6 @@ export class UserService {
       createdAt: createdUser.createdAt,
       timezone: createdUser.timezone,
     };
-  }
-
-  async getInvite(id: string) {
-    const inviteKey = `invite:${id}`;
-    const data = await this.redis.get(inviteKey);
-
-    if (typeof data !== 'string') return null;
-
-    return JSON.parse(data);
   }
 
   async createInvite(inviterId: string) {
@@ -61,11 +69,11 @@ export class UserService {
     const id = randomUUID();
     const inviteKey = `invite:${id}`;
 
-    const inviteData = {
+    const inviteData: InviteObject = {
       type: 'invite',
       payload: {
         inviterId,
-        access: 'view',
+        claims: [AccessClaim.READ],
       },
     };
 
@@ -81,16 +89,26 @@ export class UserService {
     return { id };
   }
 
+  async getInvite(id: string) {
+    const inviteKey = `invite:${id}`;
+    const data = await this.redis.get(inviteKey);
+
+    if (typeof data !== 'string') return null;
+
+    return JSON.parse(data) as InviteObject;
+  }
+
   async consumeInvite(inviteId: string, consumerId: string) {
     const inviteKey = `invite:${inviteId}`;
-
     const data = await this.redis.get(inviteKey);
+
     if (typeof data !== 'string') {
       throw new Error('Invite not found or already consumed');
     }
 
-    const inviteData = JSON.parse(data);
-    const inviterId = inviteData.payload.inviterId;
+    const {
+      payload: { inviterId, claims },
+    } = JSON.parse(data) as InviteObject;
     const inviteSetKey = `invite:set:${inviterId}`;
 
     const results = await this.redis
@@ -99,14 +117,70 @@ export class UserService {
       .sRem(inviteSetKey, inviteId)
       .exec();
 
-    if (!results) {
-      throw new Error('Invite conflict: already consumed by someone else');
+    if (!results) throw new Error('Invite conflict: already consumed');
+
+    for (const claim of claims) {
+      await this.prisma.userAccess.upsert({
+        where: {
+          ownerId_grantedToId_claim: {
+            ownerId: inviterId,
+            grantedToId: consumerId,
+            claim: claim as any,
+          },
+        },
+        update: {},
+        create: {
+          ownerId: inviterId,
+          grantedToId: consumerId,
+          claim: claim as any,
+        },
+      });
     }
 
-    return {
-      success: true,
-      type: inviteData.type,
-      payload: inviteData.payload,
-    };
+    return { success: true };
+  }
+
+  async grantAccess(ownerId: string, { targetUserId, claims }: GrantAccessDto) {
+    const results = [];
+    for (const claim of claims) {
+      const access = await this.prisma.userAccess.upsert({
+        where: {
+          ownerId_grantedToId_claim: {
+            ownerId,
+            grantedToId: targetUserId,
+            claim: claim as any,
+          },
+        },
+        update: {},
+        create: {
+          ownerId,
+          grantedToId: targetUserId,
+          claim: claim as any,
+        },
+      });
+      results.push(access);
+    }
+
+    return results;
+  }
+
+  async getAccessForUser(ownerId: string) {
+    return this.prisma.userAccess.findMany({
+      where: { ownerId },
+      include: {
+        grantedTo: { select: { id: true, name: true, surname: true } },
+      },
+    });
+  }
+
+  async checkUserClaim(ownerId: string, userId: string, claim: string) {
+    const access = await this.prisma.userAccess.findFirst({
+      where: {
+        ownerId,
+        grantedToId: userId,
+        claim: claim as any,
+      },
+    });
+    return !!access;
   }
 }

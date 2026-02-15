@@ -14,13 +14,16 @@ model User {
 
   salary     Float?
   typeSalary SalaryType?
-  maxSalary  Float?
+  maxSalary  Float       @default(1)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   shiftTemplates ShiftTemplate[]
   shifts         Shift[]
+
+  ownedAccesses   UserAccess[] @relation("OwnerAccess")
+  grantedAccesses UserAccess[] @relation("GrantedAccess")
 
   @@map("users")
 }

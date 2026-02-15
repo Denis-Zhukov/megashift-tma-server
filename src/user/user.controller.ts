@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Req, Get, Param } from '@nestjs/common';
-import { UserService } from './user.service';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import { UserService, AccessClaim } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Request } from 'express';
+import { GrantAccessDto } from './dto/grant-access.dto';
 
 @Controller('users')
 export class UserController {
@@ -25,9 +26,8 @@ export class UserController {
   @Get('invite/:id')
   async getInvite(@Param('id') id: string) {
     const invite = await this.userService.getInvite(id);
-    if (!invite) {
-      return { exists: false };
-    }
+    if (!invite) return { exists: false };
+
     return {
       exists: true,
       type: invite.type,
@@ -38,5 +38,15 @@ export class UserController {
   @Post('invite/:id/consume')
   async consumeInvite(@Param('id') id: string, @Req() req: Request) {
     return this.userService.consumeInvite(id, req.user.id);
+  }
+
+  @Get('access')
+  async getAccess(@Req() req: Request) {
+    return this.userService.getAccessForUser(req.user.id);
+  }
+
+  @Post('access/grant')
+  async grantAccess(@Req() req: Request, @Body() dto: GrantAccessDto) {
+    return this.userService.grantAccess(req.user.id, dto);
   }
 }
