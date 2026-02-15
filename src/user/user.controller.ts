@@ -29,8 +29,8 @@ export class UserController {
     if (!invite) return { exists: false };
 
     return {
+      ...invite,
       exists: true,
-      invite,
     };
   }
 
