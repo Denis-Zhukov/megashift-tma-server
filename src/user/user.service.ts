@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { randomUUID } from 'crypto';
@@ -63,7 +63,7 @@ export class UserService {
     const currentCount = await this.redis.sCard(inviteSetKey);
 
     if (currentCount >= 5) {
-      throw new Error('Invite limit exceeded');
+      throw new BadRequestException('Invite limit exceeded');
     }
 
     const id = randomUUID();
@@ -95,7 +95,25 @@ export class UserService {
 
     if (typeof data !== 'string') return null;
 
-    return JSON.parse(data) as InviteObject;
+    const invite = JSON.parse(data) as InviteObject;
+
+    const inviter = await this.prisma.user.findUnique({
+      where: { id: invite.payload.inviterId },
+      select: {
+        surname: true,
+        name: true,
+        patronymic: true,
+      },
+    });
+
+    return {
+      inviter: {
+        surname: inviter.surname,
+        name: inviter.name,
+        patronymic: inviter.patronymic,
+      },
+      claims: invite.payload.claims,
+    };
   }
 
   async consumeInvite(inviteId: string, consumerId: string) {

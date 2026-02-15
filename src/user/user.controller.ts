@@ -30,8 +30,7 @@ export class UserController {
 
     return {
       exists: true,
-      type: invite.type,
-      payload: invite.payload,
+      invite,
     };
   }
 
