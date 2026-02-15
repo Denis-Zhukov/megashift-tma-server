@@ -23,7 +23,7 @@ export class SettingsService {
       select: {
         salary: true,
         typeSalary: true,
-        maxSalary: true
+        maxSalary: true,
       },
     });
   }

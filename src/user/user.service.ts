@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { randomUUID } from 'crypto';
-import { RedisClientType, SetOptions } from 'redis';
+import { RedisClientType } from 'redis';
 
 @Injectable()
 export class UserService {
@@ -41,6 +41,16 @@ export class UserService {
   }
 
   async createInvite(inviterId: string) {
+    const ttlSeconds = 60 * 60;
+
+    const inviteSetKey = `invite:set:${inviterId}`;
+
+    const currentCount = await this.redis.sCard(inviteSetKey);
+
+    if (currentCount >= 5) {
+      throw new Error('Invite limit exceeded');
+    }
+
     const id = randomUUID();
 
     const inviteData = {
@@ -51,12 +61,18 @@ export class UserService {
       },
     };
 
-    await this.redis.set(id, JSON.stringify(inviteData), {
-      expiration: {
-        type: 'EX',
-        value: 60 * 60,
-      },
-    } satisfies SetOptions);
+    const result = await this.redis
+      .multi()
+      .set(id, JSON.stringify(inviteData), {
+        expiration: { type: 'EX', value: ttlSeconds },
+      })
+      .sAdd(inviteSetKey, id)
+      .expire(inviteSetKey, ttlSeconds)
+      .exec();
+
+    if (!result) {
+      throw new Error('Failed to create invite');
+    }
 
     return { id };
   }
