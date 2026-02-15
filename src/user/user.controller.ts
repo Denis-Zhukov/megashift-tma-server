@@ -24,6 +24,19 @@ export class UserController {
 
   @Get('invite/:id')
   async getInvite(@Param('id') id: string) {
-    return this.userService.getInvite(id);
+    const invite = await this.userService.getInvite(id);
+    if (!invite) {
+      return { exists: false };
+    }
+    return {
+      exists: true,
+      type: invite.type,
+      payload: invite.payload,
+    };
+  }
+
+  @Post('invite/:id/consume')
+  async consumeInvite(@Param('id') id: string, @Req() req: Request) {
+    return this.userService.consumeInvite(id, req.user.id);
   }
 }

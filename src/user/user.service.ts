@@ -40,11 +40,18 @@ export class UserService {
     };
   }
 
+  async getInvite(id: string) {
+    const inviteKey = `invite:${id}`;
+    const data = await this.redis.get(inviteKey);
+
+    if (typeof data !== 'string') return null;
+
+    return JSON.parse(data);
+  }
+
   async createInvite(inviterId: string) {
     const ttlSeconds = 60 * 60;
-
     const inviteSetKey = `invite:set:${inviterId}`;
-
     const currentCount = await this.redis.sCard(inviteSetKey);
 
     if (currentCount >= 5) {
@@ -52,6 +59,7 @@ export class UserService {
     }
 
     const id = randomUUID();
+    const inviteKey = `invite:${id}`;
 
     const inviteData = {
       type: 'invite',
@@ -63,27 +71,42 @@ export class UserService {
 
     const result = await this.redis
       .multi()
-      .set(id, JSON.stringify(inviteData), {
-        expiration: { type: 'EX', value: ttlSeconds },
-      })
+      .set(inviteKey, JSON.stringify(inviteData), { EX: ttlSeconds })
       .sAdd(inviteSetKey, id)
       .expire(inviteSetKey, ttlSeconds)
       .exec();
 
-    if (!result) {
-      throw new Error('Failed to create invite');
-    }
+    if (!result) throw new Error('Failed to create invite');
 
     return { id };
   }
 
-  async getInvite(id: string) {
-    const data = await this.redis.get(id);
+  async consumeInvite(inviteId: string, consumerId: string) {
+    const inviteKey = `invite:${inviteId}`;
 
+    const data = await this.redis.get(inviteKey);
     if (typeof data !== 'string') {
-      return null;
+      throw new Error('Invite not found or already consumed');
     }
 
-    return JSON.parse(data);
+    const inviteData = JSON.parse(data);
+    const inviterId = inviteData.payload.inviterId;
+    const inviteSetKey = `invite:set:${inviterId}`;
+
+    const results = await this.redis
+      .multi()
+      .del(inviteKey)
+      .sRem(inviteSetKey, inviteId)
+      .exec();
+
+    if (!results) {
+      throw new Error('Invite conflict: already consumed by someone else');
+    }
+
+    return {
+      success: true,
+      type: inviteData.type,
+      payload: inviteData.payload,
+    };
   }
 }
