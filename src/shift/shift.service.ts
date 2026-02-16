@@ -92,23 +92,42 @@ export class ShiftService {
     userId,
     shiftId,
     dto,
+    claims,
   }: {
     ownerId: string;
     userId: string;
     shiftId: string;
     dto: UpdateShiftDto;
+    claims: AccessClaim[];
   }) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { timezone: true },
-    });
-    if (!user) throw new NotFoundException('User not found');
+    const [user, shift] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { timezone: true },
+      }),
+      this.prisma.shift.findUnique({
+        where: { id: shiftId, ownerId },
+      }),
+    ]);
 
-    const existingShift = await this.prisma.shift.findUnique({
-      where: { id: shiftId, ownerId: ownerId },
-    });
-    if (!existingShift) {
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!shift) {
       throw new NotFoundException('Shift not found for this user');
+    }
+
+    const isOwner = ownerId === userId;
+    const isCreator = shift.creatorId === userId;
+
+    const canEditOwner = claims.includes(AccessClaim.EDIT_OWNER);
+    const canEditSelf = claims.includes(AccessClaim.EDIT_SELF);
+
+    const canEdit = isOwner || canEditOwner || (isCreator && canEditSelf);
+
+    if (!canEdit) {
+      throw new ForbiddenException('Недостаточно прав');
     }
 
     return this.prisma.shift.update({
@@ -134,12 +153,6 @@ export class ShiftService {
     userId: string;
     claims: AccessClaim[];
   }) {
-    if (ownerId === userId) {
-      return this.prisma.shift.delete({
-        where: { id: shiftId, ownerId },
-      });
-    }
-
     const shift = await this.prisma.shift.findUnique({
       where: { id: shiftId, ownerId },
     });
@@ -148,28 +161,20 @@ export class ShiftService {
       throw new NotFoundException('Shift not found for this user');
     }
 
-    if (
-      shift.creatorId === userId &&
-      claims.some(
-        (claim) =>
-          claim === AccessClaim.DELETE_OWNER ||
-          claim === AccessClaim.DELETE_SELF,
-      )
-    ) {
-      return this.prisma.shift.delete({
-        where: { id: shiftId, ownerId },
-      });
+    const isOwner = ownerId === userId;
+    const isCreator = shift.creatorId === userId;
+
+    const canDeleteOwner = claims.includes(AccessClaim.DELETE_OWNER);
+    const canDeleteSelf = claims.includes(AccessClaim.DELETE_SELF);
+
+    const canDelete = isOwner || canDeleteOwner || (isCreator && canDeleteSelf);
+
+    if (!canDelete) {
+      throw new ForbiddenException('Недостаточно прав');
     }
 
-    if (
-      shift.creatorId !== userId &&
-      claims.includes(AccessClaim.DELETE_OWNER)
-    ) {
-      return this.prisma.shift.delete({
-        where: { id: shiftId, ownerId },
-      });
-    }
-
-    throw new ForbiddenException('Недостаточно прав');
+    return this.prisma.shift.delete({
+      where: { id: shiftId, ownerId },
+    });
   }
 }

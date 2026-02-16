@@ -81,6 +81,7 @@ export class ShiftController {
       shiftId,
       dto,
       userId: req.user.id,
+      claims: req.user.claims,
     });
   }
 
