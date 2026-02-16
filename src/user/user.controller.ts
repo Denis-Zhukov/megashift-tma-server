@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
-import { UserService, AccessClaim } from './user.service';
+import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Request } from 'express';
 import { GrantAccessDto } from './dto/grant-access.dto';
+import { CreateInviteDto } from './dto/create-invite.dto';
 
 @Controller('users')
 export class UserController {
@@ -19,8 +20,8 @@ export class UserController {
   }
 
   @Post('invite')
-  async createInvite(@Req() req: Request) {
-    return this.userService.createInvite(req.user.id);
+  async createInvite(@Req() req: Request, @Body() dto: CreateInviteDto) {
+    return this.userService.createInvite(req.user.id, dto.claims);
   }
 
   @Get('invite/:id')

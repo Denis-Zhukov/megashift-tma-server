@@ -59,7 +59,7 @@ export class UserService {
     };
   }
 
-  async createInvite(inviterId: string) {
+  async createInvite(inviterId: string, claims: AccessClaim[]) {
     const ttlSeconds = 60 * 60;
     const inviteSetKey = `invite:set:${inviterId}`;
     const currentCount = await this.redis.sCard(inviteSetKey);
@@ -75,7 +75,7 @@ export class UserService {
       type: 'invite',
       payload: {
         inviterId,
-        claims: [AccessClaim.READ],
+        claims,
       },
     };
 
