@@ -32,6 +32,7 @@ export class UserService {
     return this.prisma.user.findUnique({
       where: { id: userId },
       select: {
+        id: true,
         name: true,
         surname: true,
         patronymic: true,
@@ -49,6 +50,7 @@ export class UserService {
     });
 
     return {
+      id: createdUser,
       name: createdUser.name,
       surname: createdUser.surname,
       patronymic: createdUser.patronymic,
