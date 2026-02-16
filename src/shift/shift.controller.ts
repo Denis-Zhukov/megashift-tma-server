@@ -1,4 +1,3 @@
-// shift.controller.ts
 import {
   Controller,
   Get,
@@ -9,27 +8,29 @@ import {
   Delete,
   Param,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
 import { ShiftService } from './shift.service';
 import { Request } from 'express';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
+import { ClaimsGuard } from '../guards/claims.guard';
+import { RequireClaims } from '../common/require-claims.decorator';
+import { AccessClaim } from '../types';
 
 @Controller('shifts')
 export class ShiftController {
   constructor(private readonly shiftsService: ShiftService) {}
 
   @Get()
+  @UseGuards(ClaimsGuard)
+  @RequireClaims(AccessClaim.READ)
   async findAll(
-    @Req() req: Request,
+    @Query('ownerId') ownerId: string,
     @Query('year') year: string,
     @Query('month') month: string,
   ) {
-    return this.shiftsService.findByMonth(
-      req.user.id,
-      Number(year),
-      Number(month),
-    );
+    return this.shiftsService.findByMonth(ownerId, Number(year), Number(month));
   }
 
   @Get('date')

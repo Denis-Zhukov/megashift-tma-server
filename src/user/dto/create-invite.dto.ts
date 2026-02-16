@@ -1,5 +1,5 @@
 import { IsArray, IsEnum, ArrayMinSize } from 'class-validator';
-import { AccessClaim } from '../user.service';
+import { AccessClaim } from '../../types';
 
 export class CreateInviteDto {
   @IsArray()

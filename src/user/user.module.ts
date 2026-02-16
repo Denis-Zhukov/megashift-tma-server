@@ -8,5 +8,6 @@ import { RedisModule } from '../redis/redis.module';
   imports: [RedisModule],
   controllers: [UserController],
   providers: [UserService, PrismaService],
+  exports: [UserService],
 })
 export class UserModule {}

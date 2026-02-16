@@ -1,0 +1,7 @@
+export enum AccessClaim {
+  READ = 'READ',
+  EDIT_OWNER = 'EDIT_OWNER',
+  EDIT_SELF = 'EDIT_SELF',
+  DELETE_OWNER = 'DELETE_OWNER',
+  DELETE_SELF = 'DELETE_SELF',
+}

@@ -1,5 +1,5 @@
 import { IsArray, ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
-import { AccessClaim } from '../user.service';
+import { AccessClaim } from '../../types';
 
 export class GrantAccessDto {
   @IsString()

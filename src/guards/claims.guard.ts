@@ -1,0 +1,65 @@
+// guards/claims.guard.ts
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  ForbiddenException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { UserService } from '../user/user.service';
+
+import { REQUIRED_CLAIMS_KEY } from '../common/require-claims.decorator';
+import { AccessClaim } from '../types';
+
+@Injectable()
+export class ClaimsGuard implements CanActivate {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly userService: UserService,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredClaims = this.reflector.get<AccessClaim[]>(
+      REQUIRED_CLAIMS_KEY,
+      context.getHandler(),
+    );
+
+    if (!requiredClaims || requiredClaims.length === 0) return true;
+
+    const req = context.switchToHttp().getRequest();
+    const consumerId: string | undefined = req.user?.id;
+    if (!consumerId) {
+      throw new UnauthorizedException('Пользователь не аутентифицирован');
+    }
+
+    const ownerId = this.extractOwnerId(req);
+    if (!ownerId) {
+      throw new BadRequestException(
+        'Не указан идентификатор владельца ресурса (ownerId)',
+      );
+    }
+
+    if (ownerId === consumerId) return true;
+
+    for (const claim of requiredClaims) {
+      let has: boolean;
+      try {
+        has = await this.userService.checkUserClaim(ownerId, consumerId, claim);
+      } catch {
+        throw new ForbiddenException('Ошибка проверки доступа');
+      }
+
+      if (!has) {
+        throw new ForbiddenException(`Отсутствует право: ${claim}`);
+      }
+    }
+
+    return true;
+  }
+
+  private extractOwnerId(req: any): string | undefined {
+    return req.query?.ownerId;
+  }
+}
