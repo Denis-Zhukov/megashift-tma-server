@@ -11,7 +11,7 @@ import { timeStringToUtcDate } from '../utils/time-string-to-date';
 export class ShiftTemplatesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getTemplatesByUserId(userId: string) {
+  async getByUserId(userId: string) {
     return this.prisma.shiftTemplate.findMany({
       where: { userId },
       select: {
@@ -115,7 +115,7 @@ export class ShiftTemplatesService {
     return this.prisma.$transaction(async (tx) => {
       await tx.shift.updateMany({
         where: {
-          userId,
+          ownerId: userId,
           shiftTemplateId: templateId,
           AND: [{ actualStartTime: null }, { actualEndTime: null }],
         },

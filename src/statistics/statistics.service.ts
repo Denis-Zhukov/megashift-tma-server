@@ -30,7 +30,7 @@ export class StatisticsService {
     const grouped = await this.prisma.shift.groupBy({
       by: ['shiftTemplateId'],
       where: {
-        userId,
+        ownerId: userId,
         date: {
           gte: startDate,
           lt: endDate,
@@ -96,7 +96,7 @@ export class StatisticsService {
 
     const shifts = await this.prisma.shift.findMany({
       where: {
-        userId,
+        ownerId: userId,
         date: {
           gte: startDate,
           lt: endDate,
@@ -181,7 +181,7 @@ export class StatisticsService {
     } else if (user.typeSalary === 'SHIFT') {
       const shiftCount = await this.prisma.shift.count({
         where: {
-          userId,
+          ownerId: userId,
           date: {
             gte: new Date(Date.UTC(year, month - 1, 1)),
             lt: new Date(Date.UTC(year, month, 1)),
@@ -192,7 +192,7 @@ export class StatisticsService {
     } else if (user.typeSalary === 'HOURLY') {
       const shifts = await this.prisma.shift.findMany({
         where: {
-          userId,
+          ownerId: userId,
           date: {
             gte: new Date(Date.UTC(year, month - 1, 1)),
             lt: new Date(Date.UTC(year, month, 1)),

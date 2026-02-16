@@ -40,9 +40,9 @@ export class UserController {
     return this.userService.consumeInvite(id, req.user.id);
   }
 
-  @Get('access')
+  @Get('available-calendars')
   async getAccess(@Req() req: Request) {
-    return this.userService.getAccessForUser(req.user.id);
+    return this.userService.getAvailableCalendars(req.user.id);
   }
 
   @Post('access/grant')

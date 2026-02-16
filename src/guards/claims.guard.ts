@@ -1,4 +1,3 @@
-// guards/claims.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -26,15 +25,17 @@ export class ClaimsGuard implements CanActivate {
       context.getHandler(),
     );
 
-    if (!requiredClaims || requiredClaims.length === 0) return true;
+    if (!requiredClaims?.length) return true;
 
     const req = context.switchToHttp().getRequest();
     const consumerId: string | undefined = req.user?.id;
+
     if (!consumerId) {
       throw new UnauthorizedException('Пользователь не аутентифицирован');
     }
 
     const ownerId = this.extractOwnerId(req);
+
     if (!ownerId) {
       throw new BadRequestException(
         'Не указан идентификатор владельца ресурса (ownerId)',
@@ -43,23 +44,31 @@ export class ClaimsGuard implements CanActivate {
 
     if (ownerId === consumerId) return true;
 
-    for (const claim of requiredClaims) {
-      let has: boolean;
-      try {
-        has = await this.userService.checkUserClaim(ownerId, consumerId, claim);
-      } catch {
-        throw new ForbiddenException('Ошибка проверки доступа');
-      }
+    let hasAtLeastOne = false;
 
-      if (!has) {
-        throw new ForbiddenException(`Отсутствует право: ${claim}`);
-      }
+    try {
+      const userClaims = await this.userService.getUserClaims(
+        ownerId,
+        consumerId,
+      );
+      req.user.claims = userClaims;
+      hasAtLeastOne = requiredClaims.some((required) =>
+        userClaims.includes(required),
+      );
+    } catch {
+      throw new ForbiddenException('Ошибка получения прав пользователя');
+    }
+
+    if (!hasAtLeastOne) {
+      throw new ForbiddenException(
+        `Требуется хотя бы одно право из: ${requiredClaims.join(', ')}`,
+      );
     }
 
     return true;
   }
 
   private extractOwnerId(req: any): string | undefined {
-    return req.query?.ownerId;
+    return req.query?.ownerId ?? req.params?.ownerId;
   }
 }

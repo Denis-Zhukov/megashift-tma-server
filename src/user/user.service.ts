@@ -177,15 +177,16 @@ export class UserService {
     return results;
   }
 
-  async getAccessForUser(ownerId: string) {
+  async getAvailableCalendars(userId: string) {
     const accessRecords = await this.prisma.userAccess.findMany({
-      where: { ownerId },
+      where: { grantedToId: userId },
       include: {
-        grantedTo: {
+        owner: {
           select: { id: true, name: true, surname: true, patronymic: true },
         },
       },
     });
+    console.log(accessRecords);
 
     const grouped: Record<
       string,
@@ -199,7 +200,7 @@ export class UserService {
     > = {};
 
     for (const record of accessRecords) {
-      const user = record.grantedTo;
+      const user = record.owner;
       if (!grouped[user.id]) {
         grouped[user.id] = {
           id: user.id,
@@ -215,14 +216,17 @@ export class UserService {
     return Object.values(grouped);
   }
 
-  async checkUserClaim(ownerId: string, userId: string, claim: string) {
-    const access = await this.prisma.userAccess.findFirst({
+  async getUserClaims(ownerId: string, userId: string) {
+    const claims = await this.prisma.userAccess.findMany({
       where: {
         ownerId,
         grantedToId: userId,
-        claim: claim as any,
+      },
+      select: {
+        claim: true,
       },
     });
-    return !!access;
+
+    return claims.map(({ claim }) => claim);
   }
 }

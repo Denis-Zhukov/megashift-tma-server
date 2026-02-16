@@ -1,4 +1,5 @@
 import { User } from '@tma.js/init-data-node';
+import { AccessClaim } from './src/types';
 
 type SnakeToCamel<S extends string> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamel<U>>}`
@@ -12,7 +13,10 @@ type SnakeToCamelObject<T> = T extends object
     }
   : T;
 
-type UserCamelCase = Omit<SnakeToCamelObject<User>, 'id'> & { id: string };
+type UserCamelCase = Omit<SnakeToCamelObject<User>, 'id'> & {
+  id: string;
+  claims?: AccessClaim[];
+};
 
 declare global {
   namespace Express {

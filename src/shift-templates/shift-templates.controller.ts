@@ -6,19 +6,26 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ShiftTemplatesService } from './shift-templates.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { Request } from 'express';
+import { ClaimsGuard } from '../guards/claims.guard';
+import { RequireClaims } from '../common/require-claims.decorator';
+import { AccessClaim } from '../types';
 
 @Controller('shift-templates')
 export class ShiftTemplatesController {
   constructor(private readonly shiftTemplatesService: ShiftTemplatesService) {}
 
   @Get()
-  getByUser(@Req() req: Request) {
-    return this.shiftTemplatesService.getTemplatesByUserId(req.user.id);
+  @UseGuards(ClaimsGuard)
+  @RequireClaims(AccessClaim.READ)
+  getByUserId(@Query('ownerId') ownerId: string) {
+    return this.shiftTemplatesService.getByUserId(ownerId);
   }
 
   @Get(':id')

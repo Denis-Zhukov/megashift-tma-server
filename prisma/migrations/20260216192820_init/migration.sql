@@ -20,7 +20,8 @@ CREATE TABLE "shift_templates" (
 -- CreateTable
 CREATE TABLE "shifts" (
     "id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "owner_id" TEXT NOT NULL,
+    "creator_id" TEXT NOT NULL,
     "shift_template_id" TEXT,
     "date" DATE NOT NULL,
     "actual_start_time" TIME,
@@ -60,7 +61,7 @@ CREATE TABLE "users" (
 );
 
 -- CreateIndex
-CREATE INDEX "shifts_user_id_date_idx" ON "shifts"("user_id", "date");
+CREATE INDEX "shifts_owner_id_date_idx" ON "shifts"("owner_id", "date");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_access_ownerId_grantedToId_claim_key" ON "user_access"("ownerId", "grantedToId", "claim");
@@ -69,7 +70,10 @@ CREATE UNIQUE INDEX "user_access_ownerId_grantedToId_claim_key" ON "user_access"
 ALTER TABLE "shift_templates" ADD CONSTRAINT "shift_templates_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "shifts" ADD CONSTRAINT "shifts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "shifts" ADD CONSTRAINT "shifts_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shifts" ADD CONSTRAINT "shifts_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "shifts" ADD CONSTRAINT "shifts_shift_template_id_fkey" FOREIGN KEY ("shift_template_id") REFERENCES "shift_templates"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -20,7 +20,9 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   shiftTemplates ShiftTemplate[]
-  shifts         Shift[]
+
+  ownedShifts   Shift[] @relation("ShiftOwner")
+  createdShifts Shift[] @relation("ShiftCreator")
 
   ownedAccesses   UserAccess[] @relation("OwnerAccess")
   grantedAccesses UserAccess[] @relation("GrantedAccess")

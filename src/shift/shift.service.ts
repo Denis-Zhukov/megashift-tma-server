@@ -1,7 +1,8 @@
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { fromZonedTime } from 'date-fns-tz';
@@ -9,12 +10,23 @@ import { addDays, endOfMonth, startOfMonth, subDays } from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { timeStringToUtcDate } from '../utils/time-string-to-date';
+import { AccessClaim } from '../types';
 
 @Injectable()
 export class ShiftService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByMonth(userId: string, year: number, month: number) {
+  async findByMonth({
+    ownerId,
+    year,
+    month,
+    userId,
+  }: {
+    userId: string;
+    ownerId: string;
+    year: number;
+    month: number;
+  }) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { timezone: true },
@@ -32,7 +44,7 @@ export class ShiftService {
 
     return this.prisma.shift.findMany({
       where: {
-        userId,
+        ownerId,
         date: {
           gte: utcStart,
           lte: utcEnd,
@@ -42,43 +54,50 @@ export class ShiftService {
     });
   }
 
-  async findByDay(userId: string, dateStr: string) {
+  async findByDay({ ownerId, dateStr }: { ownerId: string; dateStr: string }) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
       throw new BadRequestException('Date must be in YYYY-MM-DD format');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { timezone: true },
-    });
-    if (!user) throw new NotFoundException('User not found');
-
     return this.prisma.shift.findMany({
       where: {
-        userId,
+        ownerId,
         date: `${dateStr}T00:00:00.000Z`,
       },
       orderBy: { createdAt: 'asc' },
     });
   }
 
-  async create(userId: string, dto: CreateShiftDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { timezone: true },
-    });
-    if (!user) throw new NotFoundException('User not found');
-
+  async create({
+    ownerId,
+    userId,
+    dto,
+  }: {
+    ownerId: string;
+    userId: string;
+    dto: CreateShiftDto;
+  }) {
     return this.prisma.shift.create({
       data: {
-        userId,
+        ownerId,
+        creatorId: userId,
         shiftTemplateId: dto.shiftTemplateId,
         date: `${dto.date}T00:00:00.000Z`,
       },
     });
   }
 
-  async update(userId: string, shiftId: string, dto: UpdateShiftDto) {
+  async update({
+    ownerId,
+    userId,
+    shiftId,
+    dto,
+  }: {
+    ownerId: string;
+    userId: string;
+    shiftId: string;
+    dto: UpdateShiftDto;
+  }) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { timezone: true },
@@ -86,9 +105,9 @@ export class ShiftService {
     if (!user) throw new NotFoundException('User not found');
 
     const existingShift = await this.prisma.shift.findUnique({
-      where: { id: shiftId, userId },
+      where: { id: shiftId, ownerId: ownerId },
     });
-    if (!existingShift || existingShift.userId !== userId) {
+    if (!existingShift) {
       throw new NotFoundException('Shift not found for this user');
     }
 
@@ -104,9 +123,53 @@ export class ShiftService {
     });
   }
 
-  async delete(userId: string, id: string) {
-    return this.prisma.shift.delete({
-      where: { id, userId },
+  async delete({
+    shiftId,
+    ownerId,
+    userId,
+    claims,
+  }: {
+    shiftId: string;
+    ownerId: string;
+    userId: string;
+    claims: AccessClaim[];
+  }) {
+    if (ownerId === userId) {
+      return this.prisma.shift.delete({
+        where: { id: shiftId, ownerId },
+      });
+    }
+
+    const shift = await this.prisma.shift.findUnique({
+      where: { id: shiftId, ownerId },
     });
+
+    if (!shift) {
+      throw new NotFoundException('Shift not found for this user');
+    }
+
+    if (
+      shift.creatorId === userId &&
+      claims.some(
+        (claim) =>
+          claim === AccessClaim.DELETE_OWNER ||
+          claim === AccessClaim.DELETE_SELF,
+      )
+    ) {
+      return this.prisma.shift.delete({
+        where: { id: shiftId, ownerId },
+      });
+    }
+
+    if (
+      shift.creatorId === userId &&
+      claims.includes(AccessClaim.DELETE_OWNER)
+    ) {
+      return this.prisma.shift.delete({
+        where: { id: shiftId, ownerId },
+      });
+    }
+
+    throw new ForbiddenException('Недостаточно пра');
   }
 }

@@ -1,7 +1,8 @@
 model Shift {
   id String @id @default(uuid())
 
-  userId          String  @map("user_id")
+  ownerId         String  @map("owner_id")
+  creatorId       String  @map("creator_id")
   shiftTemplateId String? @map("shift_template_id")
 
   date DateTime @db.Date
@@ -12,9 +13,10 @@ model Shift {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wner          User           @relation("ShiftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  creator       User           @relation("ShiftCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   shiftTemplate ShiftTemplate? @relation(fields: [shiftTemplateId], references: [id], onDelete: SetNull)
 
-  @@index([userId, date])
+  @@index([ownerId, date])
   @@map("shifts")
 }
