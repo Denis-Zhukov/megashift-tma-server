@@ -162,7 +162,7 @@ export class ShiftService {
     }
 
     if (
-      shift.creatorId === userId &&
+      shift.creatorId !== userId &&
       claims.includes(AccessClaim.DELETE_OWNER)
     ) {
       return this.prisma.shift.delete({
@@ -170,6 +170,6 @@ export class ShiftService {
       });
     }
 
-    throw new ForbiddenException('Недостаточно пра');
+    throw new ForbiddenException('Недостаточно прав');
   }
 }
