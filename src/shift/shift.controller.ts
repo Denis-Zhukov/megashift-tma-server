@@ -54,7 +54,7 @@ export class ShiftController {
   }
 
   @Post()
-  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
+  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_ALL)
   async create(
     @CurrentUser() user: AuthUser,
     @OwnerId() ownerId: string,
@@ -68,7 +68,7 @@ export class ShiftController {
   }
 
   @Patch(':id')
-  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
+  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_ALL)
   async update(
     @CurrentUser() user: AuthUser,
     @OwnerId() ownerId: string,
@@ -84,7 +84,7 @@ export class ShiftController {
     });
   }
 
-  @RequireClaims(AccessClaim.DELETE_SELF, AccessClaim.DELETE_OWNER)
+  @RequireClaims(AccessClaim.DELETE_SELF, AccessClaim.DELETE_ALL)
   @Delete(':id')
   async delete(
     @CurrentUser() user: AuthUser,

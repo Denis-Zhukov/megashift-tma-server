@@ -220,11 +220,11 @@ export class ShiftTemplatesService {
         self: AccessClaim.READ,
       },
       edit: {
-        owner: AccessClaim.EDIT_OWNER,
+        owner: AccessClaim.DELETE_ALL,
         self: AccessClaim.EDIT_SELF,
       },
       delete: {
-        owner: AccessClaim.DELETE_OWNER,
+        owner: AccessClaim.DELETE_ALL,
         self: AccessClaim.DELETE_SELF,
       },
     }[actionType];

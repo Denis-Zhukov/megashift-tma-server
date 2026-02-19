@@ -42,7 +42,7 @@ export class ShiftTemplatesController {
   }
 
   @Post()
-  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
+  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_ALL)
   create(
     @CurrentUser() user: AuthUser,
     @OwnerId() ownerId: string,
@@ -56,7 +56,7 @@ export class ShiftTemplatesController {
   }
 
   @Patch(':id')
-  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
+  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_ALL)
   update(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -71,7 +71,7 @@ export class ShiftTemplatesController {
   }
 
   @Delete(':id')
-  @RequireClaims(AccessClaim.DELETE_SELF, AccessClaim.DELETE_OWNER)
+  @RequireClaims(AccessClaim.DELETE_SELF, AccessClaim.DELETE_ALL)
   delete(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,

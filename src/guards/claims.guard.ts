@@ -52,7 +52,7 @@ export class ClaimsGuard implements CanActivate {
         consumerId,
       );
       req.user.claims = userClaims;
-      hasAtLeastOne = requiredClaims.some((required) =>
+      hasAtLeastOne = requiredClaims.some((required: AccessClaim) =>
         userClaims.includes(required),
       );
     } catch {
@@ -60,9 +60,7 @@ export class ClaimsGuard implements CanActivate {
     }
 
     if (!hasAtLeastOne) {
-      throw new ForbiddenException(
-        `Требуется хотя бы одно право из: ${requiredClaims.join(', ')}`,
-      );
+      throw new ForbiddenException(`Недостаточно прав`);
     }
 
     return true;

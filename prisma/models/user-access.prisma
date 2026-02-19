@@ -1,9 +1,10 @@
 enum AccessClaim {
   READ
-  EDIT_OWNER
   EDIT_SELF
-  DELETE_OWNER
   DELETE_SELF
+  EDIT_ALL
+  DELETE_ALL
+  READ_STATISTICS
 }
 
 model UserAccess {

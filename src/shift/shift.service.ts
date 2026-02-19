@@ -179,9 +179,9 @@ export class ShiftService {
     const isCreator = shift.creatorId === userId;
 
     const claimMap = {
-      edit: { owner: AccessClaim.EDIT_OWNER, self: AccessClaim.EDIT_SELF },
+      edit: { owner: AccessClaim.EDIT_ALL, self: AccessClaim.EDIT_SELF },
       delete: {
-        owner: AccessClaim.DELETE_OWNER,
+        owner: AccessClaim.DELETE_ALL,
         self: AccessClaim.DELETE_SELF,
       },
     }[actionType];

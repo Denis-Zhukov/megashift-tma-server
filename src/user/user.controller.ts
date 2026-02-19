@@ -1,33 +1,47 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Request } from 'express';
 import { GrantAccessDto } from './dto/grant-access.dto';
 import { CreateInviteDto } from './dto/create-invite.dto';
+import { AuthUser, CurrentUser } from '../common/current-user.decorator';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
-    return this.userService.create(req.user.id, createUserDto);
+  async register(
+    @CurrentUser() user: AuthUser,
+    @Body() createUserDto: CreateUserDto,
+  ) {
+    return this.userService.create(user.id, createUserDto);
   }
 
   @Get('check-registration')
-  async checkRegistration(@Req() req: Request) {
-    return this.userService.getById(req.user.id);
+  async checkRegistration(@CurrentUser() user: AuthUser) {
+    return this.userService.getById(user.id);
   }
 
   @Post('invite')
-  async createInvite(@Req() req: Request, @Body() dto: CreateInviteDto) {
-    return this.userService.createInvite(req.user.id, dto.claims);
+  async createInvite(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateInviteDto,
+  ) {
+    return this.userService.createInvite(user.id, dto.claims);
   }
 
   @Get('invite/:id')
-  async getInvite(@Param('id') id: string) {
+  async getInvite(@Param('id', ParseUUIDPipe) id: string) {
     const invite = await this.userService.getInvite(id);
-    if (!invite) return { exists: false };
+    if (!invite) throw new NotFoundException({exists: false});
 
     return {
       ...invite,
@@ -36,17 +50,20 @@ export class UserController {
   }
 
   @Post('invite/:id/consume')
-  async consumeInvite(@Param('id') id: string, @Req() req: Request) {
-    return this.userService.consumeInvite(id, req.user.id);
+  async consumeInvite(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.userService.consumeInvite(id, user.id);
   }
 
   @Get('available-calendars')
-  async getAccess(@Req() req: Request) {
-    return this.userService.getAvailableCalendars(req.user.id);
+  async getAccess(@CurrentUser() user: AuthUser) {
+    return this.userService.getAvailableCalendars(user.id);
   }
 
   @Post('access/grant')
-  async grantAccess(@Req() req: Request, @Body() dto: GrantAccessDto) {
-    return this.userService.grantAccess(req.user.id, dto);
+  async grantAccess(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: GrantAccessDto,
+  ) {
+    return this.userService.grantAccess(user.id, dto);
   }
 }
