@@ -7,17 +7,21 @@ import { ShiftTemplatesModule } from './shift-templates/shift-templates.module';
 import { ShiftModule } from './shift/shift.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { SettingsModule } from './settings/settings.module';
+import { AccessModule } from './access/access.module';
+import { InviteModule } from './invite/invite.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    UserModule,
     PrismaModule,
+    UserModule,
+    AccessModule,
+    InviteModule,
     ProfileModule,
-    ShiftTemplatesModule,
     ShiftModule,
+    ShiftTemplatesModule,
     StatisticsModule,
     SettingsModule,
   ],
