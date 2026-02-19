@@ -4,100 +4,98 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ShiftService } from './shift.service';
-import { Request } from 'express';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { ClaimsGuard } from '../guards/claims.guard';
 import { RequireClaims } from '../common/require-claims.decorator';
 import { AccessClaim } from '../types';
+import { AuthUser, CurrentUser } from '../common/current-user.decorator';
+import { OwnerId } from '../common/owner-id.decorator';
+import { FindShiftsQueryDto } from './dto/find-shift-query.dto';
+import { FindShiftByDayDto } from './dto/find-shift-by-day.dto';
 
+@UseGuards(ClaimsGuard)
 @Controller('shifts')
 export class ShiftController {
-  constructor(private readonly shiftsService: ShiftService) {}
+  constructor(private readonly shiftService: ShiftService) {}
 
   @Get()
-  @UseGuards(ClaimsGuard)
   @RequireClaims(AccessClaim.READ)
-  async findAll(
-    @Req() req: Request,
-    @Query('ownerId') ownerId: string,
-    @Query('year') year: string,
-    @Query('month') month: string,
+  async findByMonth(
+    @CurrentUser() user: AuthUser,
+    @OwnerId() ownerId: string,
+    @Query() query: FindShiftsQueryDto,
   ) {
-    return this.shiftsService.findByMonth({
-      userId: req.user.id,
+    return this.shiftService.findByMonth({
+      userId: user.id,
       ownerId,
-      year: Number(year),
-      month: Number(month),
+      year: query.year,
+      month: query.month,
     });
   }
 
   @Get('date')
-  @UseGuards(ClaimsGuard)
   @RequireClaims(AccessClaim.READ)
-  async findByDay(
-    @Query('ownerId') ownerId: string,
-    @Query('date') date: string,
+  async findByDate(
+    @OwnerId() ownerId: string,
+    @Query() query: FindShiftByDayDto,
   ) {
-    return this.shiftsService.findByDay({
-      ownerId: ownerId,
-      dateStr: date,
+    return this.shiftService.findByDate({
+      ownerId,
+      dateStr: query.date,
     });
   }
 
   @Post()
-  @UseGuards(ClaimsGuard)
   @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
   async create(
-    @Req() req: Request,
-    @Query('ownerId') ownerId: string,
+    @CurrentUser() user: AuthUser,
+    @OwnerId() ownerId: string,
     @Body() dto: CreateShiftDto,
   ) {
-    return this.shiftsService.create({
+    return this.shiftService.create({
       ownerId,
-      userId: req.user.id,
+      userId: user.id,
       dto,
     });
   }
 
   @Patch(':id')
-  @UseGuards(ClaimsGuard)
   @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
   async update(
-    @Req() req: Request,
-    @Query('ownerId') ownerId: string,
-    @Param('id') shiftId: string,
+    @CurrentUser() user: AuthUser,
+    @OwnerId() ownerId: string,
+    @Param('id', ParseUUIDPipe) shiftId: string,
     @Body() dto: UpdateShiftDto,
   ) {
-    return this.shiftsService.update({
+    return this.shiftService.update({
       ownerId,
       shiftId,
       dto,
-      userId: req.user.id,
-      claims: req.user.claims,
+      userId: user.id,
+      claims: user.claims,
     });
   }
 
-  @UseGuards(ClaimsGuard)
   @RequireClaims(AccessClaim.DELETE_SELF, AccessClaim.DELETE_OWNER)
   @Delete(':id')
   async delete(
-    @Req() req: Request,
-    @Query('ownerId') ownerId: string,
-    @Param('id') shiftId: string,
+    @CurrentUser() user: AuthUser,
+    @OwnerId() ownerId: string,
+    @Param('id', ParseUUIDPipe) shiftId: string,
   ) {
-    return this.shiftsService.delete({
+    return this.shiftService.delete({
       shiftId,
       ownerId,
-      userId: req.user.id,
-      claims: req.user.claims,
+      userId: user.id,
+      claims: user.claims,
     });
   }
 }
