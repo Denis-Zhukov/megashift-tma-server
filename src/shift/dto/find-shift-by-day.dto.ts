@@ -1,6 +1,6 @@
 import { IsDateString } from 'class-validator';
 
 export class FindShiftByDayDto {
-  @IsDateString()
+  @IsDateString({ strict: true })
   date: string;
 }

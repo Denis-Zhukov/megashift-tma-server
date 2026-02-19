@@ -1,7 +1,7 @@
-import { IsISO8601, IsUUID } from 'class-validator';
+import { IsDateString, IsUUID } from 'class-validator';
 
 export class CreateShiftDto {
-  @IsISO8601({ strict: true })
+  @IsDateString({ strict: true })
   date!: string;
 
   @IsUUID()
