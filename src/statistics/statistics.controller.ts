@@ -1,74 +1,47 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Req,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { StatisticsService } from './statistics.service';
-import { Request } from 'express';
+import { ClaimsGuard } from '../guards/claims.guard';
+import { RequireClaims } from '../common/require-claims.decorator';
+import { AccessClaim } from '../types';
+import { OwnerId } from '../common/owner-id.decorator';
+import { GetMonthYearDto } from './dto/get-month-year.dto';
 
+@UseGuards(ClaimsGuard)
+@RequireClaims(AccessClaim.READ_STATISTICS)
 @Controller('statistics')
 export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) {}
 
   @Get('shifts')
   async getShiftStatistics(
-    @Req() req: Request,
-    @Query('year') year: string,
-    @Query('month') month: string,
+    @OwnerId() ownerId: string,
+    @Query() query: GetMonthYearDto,
   ) {
-    const parsedYear = Number(year);
-    const parsedMonth = Number(month);
-
-    if (!parsedYear || !parsedMonth || parsedMonth < 1 || parsedMonth > 12) {
-      throw new BadRequestException('Invalid year or month');
-    }
-
     return this.statisticsService.getShiftsByTemplate(
-      req.user.id,
-      parsedYear,
-      parsedMonth,
+      ownerId,
+      query.year,
+      query.month,
     );
   }
 
   @Get('shifts/hours')
   async getShiftHoursStatistics(
-    @Req() req: Request,
-    @Query('year') year: string,
-    @Query('month') month: string,
+    @OwnerId() ownerId: string,
+    @Query() query: GetMonthYearDto,
   ) {
-    const parsedYear = Number(year);
-    const parsedMonth = Number(month);
-
-    if (!parsedYear || !parsedMonth || parsedMonth < 1 || parsedMonth > 12) {
-      throw new BadRequestException('Invalid year or month');
-    }
-
     return this.statisticsService.getShiftsHoursByTemplate(
-      req.user.id,
-      parsedYear,
-      parsedMonth,
+      ownerId,
+      query.year,
+      query.month,
     );
   }
 
   @Get('salary')
-  async getSalary(
-    @Req() req: Request,
-    @Query('year') year: string,
-    @Query('month') month: string,
-  ) {
-    const parsedYear = Number(year);
-    const parsedMonth = Number(month);
-
-    if (!parsedYear || !parsedMonth || parsedMonth < 1 || parsedMonth > 12) {
-      throw new BadRequestException('Invalid year or month');
-    }
-
+  async getSalary(@OwnerId() ownerId: string, @Query() query: GetMonthYearDto) {
     return this.statisticsService.getSalaryForMonth(
-      (req.user as any).id,
-      parsedYear,
-      parsedMonth,
+      ownerId,
+      query.year,
+      query.month,
     );
   }
 }
