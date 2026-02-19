@@ -8,7 +8,7 @@ import {
   Body,
 } from '@nestjs/common';
 import { InviteService } from './invite.service';
-import { AuthUser, CurrentUser } from '../common/current-user.decorator';
+import { AuthUser, CurrentUser } from '../utils/decorators/current-user.decorator';
 import { CreateInviteDto } from './dto/create-invite.dto';
 
 @Controller('users/invite')

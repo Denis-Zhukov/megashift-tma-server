@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { TmaGuard } from './guards/tma.guard';
+import { TmaGuard } from './utils/guards/tma.guard';
 import { WinstonLogger } from './logger/winston-logger.service';
 
 async function bootstrap() {

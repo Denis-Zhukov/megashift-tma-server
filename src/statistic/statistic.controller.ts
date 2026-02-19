@@ -1,9 +1,9 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { StatisticService } from './statistic.service';
-import { ClaimsGuard } from '../guards/claims.guard';
-import { RequireClaims } from '../common/require-claims.decorator';
+import { ClaimsGuard } from '../utils/guards/claims.guard';
+import { RequireClaims } from '../utils/decorators/require-claims.decorator';
 import { AccessClaim } from '../types';
-import { OwnerId } from '../common/owner-id.decorator';
+import { OwnerId } from '../utils/decorators/owner-id.decorator';
 import { GetMonthYearDto } from './dto/get-month-year.dto';
 
 @UseGuards(ClaimsGuard)

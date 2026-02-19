@@ -11,11 +11,11 @@ import {
 } from '@nestjs/common';
 import { ShiftTemplateService } from './shift-template.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
-import { ClaimsGuard } from '../guards/claims.guard';
-import { RequireClaims } from '../common/require-claims.decorator';
+import { ClaimsGuard } from '../utils/guards/claims.guard';
+import { RequireClaims } from '../utils/decorators/require-claims.decorator';
 import { AccessClaim } from '../types';
-import { OwnerId } from '../common/owner-id.decorator';
-import { CurrentUser, AuthUser } from '../common/current-user.decorator';
+import { OwnerId } from '../utils/decorators/owner-id.decorator';
+import { CurrentUser, AuthUser } from '../utils/decorators/current-user.decorator';
 
 @UseGuards(ClaimsGuard)
 @Controller('shift-templates')

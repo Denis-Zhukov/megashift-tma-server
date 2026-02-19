@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AccessService } from './access.service';
-import { AuthUser, CurrentUser } from '../common/current-user.decorator';
+import { AuthUser, CurrentUser } from '../utils/decorators/current-user.decorator';
 import { GrantAccessDto } from './dto/grant-access.dto';
 
 @Controller('users/access')

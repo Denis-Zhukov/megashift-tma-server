@@ -8,9 +8,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { REQUIRED_CLAIMS_KEY } from '../common/require-claims.decorator';
-import { AccessClaim } from '../types';
-import { AccessService } from '../access/access.service';
+import { REQUIRED_CLAIMS_KEY } from '../decorators/require-claims.decorator';
+import { AccessClaim } from '../../types';
+import { AccessService } from '../../access/access.service';
 
 @Injectable()
 export class ClaimsGuard implements CanActivate {

@@ -13,11 +13,11 @@ import {
 import { ShiftService } from './shift.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
-import { ClaimsGuard } from '../guards/claims.guard';
-import { RequireClaims } from '../common/require-claims.decorator';
+import { ClaimsGuard } from '../utils/guards/claims.guard';
+import { RequireClaims } from '../utils/decorators/require-claims.decorator';
 import { AccessClaim } from '../types';
-import { AuthUser, CurrentUser } from '../common/current-user.decorator';
-import { OwnerId } from '../common/owner-id.decorator';
+import { AuthUser, CurrentUser } from '../utils/decorators/current-user.decorator';
+import { OwnerId } from '../utils/decorators/owner-id.decorator';
 import { FindShiftsQueryDto } from './dto/find-shift-query.dto';
 import { FindShiftByDayDto } from './dto/find-shift-by-day.dto';
 
