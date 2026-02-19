@@ -4,19 +4,32 @@ export const RedisProvider = {
   provide: 'REDIS_CLIENT',
   useFactory: async () => {
     const url = process.env.REDIS_URL;
+    if (!url) throw new Error('REDIS_URL is not defined');
 
-    if (!url) {
-      throw new Error('REDIS_URL is not defined');
-    }
+    const client = createClient({
+      url,
+      socket: {
+        reconnectStrategy: (retries) => {
+          const baseDelay = 1000;
+          const expDelay = Math.min(1000 * Math.pow(2, retries), 10000);
 
-    const client = createClient({ url });
+          const jitter = Math.floor(Math.random() * baseDelay);
+          const delay = expDelay + jitter;
 
-    client.on('error', (err) => {
-      console.error('Redis error:', err);
+          console.warn(
+            `Redis reconnect attempt #${retries}, waiting ${delay}ms (including jitter ${jitter}ms)`,
+          );
+          return delay;
+        },
+      },
     });
 
-    await client.connect();
+    client.on('connect', () => console.log('Redis connected'));
+    client.on('ready', () => console.log('Redis ready'));
+    client.on('error', (err) => console.error('Redis error:', err));
+    client.on('end', () => console.warn('Redis connection closed'));
 
+    await client.connect();
     return client;
   },
 };

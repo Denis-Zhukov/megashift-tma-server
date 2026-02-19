@@ -38,6 +38,7 @@ export class PrismaService
       );
     }
   }
+
   private async connectWithRetry(): Promise<void> {
     const maxDelayMs = 30_000;
     const baseDelayMs = 1000;
@@ -55,9 +56,11 @@ export class PrismaService
         this.logger.warn(
           `Prisma connect attempt #${attempt} failed: ${errMsg}`,
         );
+
         const exp = Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt));
         const jitter = Math.floor(Math.random() * baseDelayMs);
         const delay = Math.max(500, Math.min(maxDelayMs, exp + jitter));
+
         this.logger.log(`Waiting ${delay} ms before next attempt...`);
         await this.sleep(delay);
       }
