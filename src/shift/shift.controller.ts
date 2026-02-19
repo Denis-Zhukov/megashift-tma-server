@@ -26,7 +26,7 @@ import { FindShiftByDayDto } from './dto/find-shift-by-day.dto';
 export class ShiftController {
   constructor(private readonly shiftService: ShiftService) {}
 
-  @Get()
+  @Get('by-month')
   @RequireClaims(AccessClaim.READ)
   async findByMonth(
     @CurrentUser() user: AuthUser,
@@ -41,7 +41,7 @@ export class ShiftController {
     });
   }
 
-  @Get('date')
+  @Get('by-date')
   @RequireClaims(AccessClaim.READ)
   async findByDate(
     @OwnerId() ownerId: string,
