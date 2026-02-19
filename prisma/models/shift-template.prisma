@@ -1,6 +1,8 @@
 model ShiftTemplate {
-  id     String @id @default(uuid())
-  userId String @map("user_id")
+  id String @id @default(uuid())
+
+  ownerId   String @map("owner_id")
+  creatorId String @map("creator_id")
 
   label String
   color String?
@@ -8,7 +10,8 @@ model ShiftTemplate {
   startTime DateTime @map("start_time") @db.Time()
   endTime   DateTime @map("end_time") @db.Time()
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  owner   User @relation("OwnedTemplates", fields: [ownerId], references: [id], onDelete: Cascade)
+  creator User @relation("CreatedTemplates", fields: [creatorId], references: [id], onDelete: Cascade)
 
   shifts Shift[]
 

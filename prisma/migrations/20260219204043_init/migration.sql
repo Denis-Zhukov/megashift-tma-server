@@ -7,7 +7,8 @@ CREATE TYPE "SalaryType" AS ENUM ('HOURLY', 'SHIFT', 'MONTHLY');
 -- CreateTable
 CREATE TABLE "shift_templates" (
     "id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "owner_id" TEXT NOT NULL,
+    "creator_id" TEXT NOT NULL,
     "label" TEXT NOT NULL,
     "color" TEXT,
     "start_time" TIME NOT NULL,
@@ -67,7 +68,10 @@ CREATE INDEX "shifts_owner_id_date_idx" ON "shifts"("owner_id", "date");
 CREATE UNIQUE INDEX "user_access_ownerId_grantedToId_claim_key" ON "user_access"("ownerId", "grantedToId", "claim");
 
 -- AddForeignKey
-ALTER TABLE "shift_templates" ADD CONSTRAINT "shift_templates_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "shift_templates" ADD CONSTRAINT "shift_templates_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shift_templates" ADD CONSTRAINT "shift_templates_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "shifts" ADD CONSTRAINT "shifts_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

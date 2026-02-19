@@ -54,7 +54,7 @@ export class StatisticsService {
     if (templateIds.length > 0) {
       templates = await this.prisma.shiftTemplate.findMany({
         where: {
-          userId,
+          ownerId: userId,
           id: { in: templateIds },
         },
         select: {
@@ -128,7 +128,7 @@ export class StatisticsService {
     if (templateIds.length > 0) {
       templates = await this.prisma.shiftTemplate.findMany({
         where: {
-          userId,
+          ownerId: userId,
           id: { in: templateIds },
         },
         select: {

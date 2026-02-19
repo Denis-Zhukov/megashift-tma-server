@@ -6,52 +6,80 @@ import {
   Param,
   Patch,
   Post,
-  Query,
-  Req,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ShiftTemplatesService } from './shift-templates.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
-import { Request } from 'express';
 import { ClaimsGuard } from '../guards/claims.guard';
 import { RequireClaims } from '../common/require-claims.decorator';
 import { AccessClaim } from '../types';
+import { OwnerId } from '../common/owner-id.decorator';
+import { CurrentUser, AuthUser } from '../common/current-user.decorator';
 
+@UseGuards(ClaimsGuard)
 @Controller('shift-templates')
 export class ShiftTemplatesController {
   constructor(private readonly shiftTemplatesService: ShiftTemplatesService) {}
 
   @Get()
-  @UseGuards(ClaimsGuard)
   @RequireClaims(AccessClaim.READ)
-  getByUserId(@Query('ownerId') ownerId: string) {
+  getByUserId(@OwnerId() ownerId: string) {
     return this.shiftTemplatesService.getByUserId(ownerId);
   }
 
   @Get(':id')
-  getById(@Req() req: Request, @Param('id') id: string) {
-    return this.shiftTemplatesService.getTemplateByUserIdAndById(
-      req.user.id,
-      id,
-    );
+  @RequireClaims(AccessClaim.READ)
+  getById(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.shiftTemplatesService.getTemplateByUserAndOwner({
+      userId: user.id,
+      templateId: id,
+      claims: user.claims,
+    });
   }
 
   @Post()
-  create(@Req() req: Request, @Body() dto: CreateTemplateDto) {
-    return this.shiftTemplatesService.createTemplateByUserId(req.user.id, dto);
+  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
+  create(
+    @CurrentUser() user: AuthUser,
+    @OwnerId() ownerId: string,
+    @Body() dto: CreateTemplateDto,
+  ) {
+    return this.shiftTemplatesService.createTemplate({
+      ownerId,
+      userId: user.id,
+      dto,
+    });
   }
 
   @Patch(':id')
+  @RequireClaims(AccessClaim.EDIT_SELF, AccessClaim.EDIT_OWNER)
   update(
-    @Req() req: Request,
-    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateTemplateDto,
   ) {
-    return this.shiftTemplatesService.updateTemplate(req.user.id, id, dto);
+    return this.shiftTemplatesService.updateTemplate({
+      userId: user.id,
+      templateId: id,
+      dto,
+      claims: user.claims,
+    });
   }
 
   @Delete(':id')
-  delete(@Req() req: Request, @Param('id') id: string) {
-    return this.shiftTemplatesService.deleteTemplate(req.user.id, id);
+  @RequireClaims(AccessClaim.DELETE_SELF, AccessClaim.DELETE_OWNER)
+  delete(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.shiftTemplatesService.deleteTemplate({
+      userId: user.id,
+      templateId: id,
+      claims: user.claims,
+    });
   }
 }
