@@ -13,7 +13,10 @@ export class AccessController {
   }
 
   @Post('grant')
-  async grantAccess(@CurrentUser() user: AuthUser, @Body() dto: GrantAccessDto) {
+  async grantAccess(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: GrantAccessDto,
+  ) {
     return this.accessService.grantAccess(user.id, dto);
   }
 }

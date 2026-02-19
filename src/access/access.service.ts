@@ -61,4 +61,12 @@ export class AccessService {
 
     return Object.values(grouped);
   }
+
+  async getUserClaims(ownerId: string, userId: string) {
+    const claims = await this.prisma.userAccess.findMany({
+      where: { ownerId, grantedToId: userId },
+      select: { claim: true },
+    });
+    return claims.map(({ claim }) => claim);
+  }
 }

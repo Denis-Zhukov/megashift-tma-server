@@ -15,7 +15,7 @@ type TemplatePermissionData = {
 };
 
 @Injectable()
-export class ShiftTemplatesService {
+export class ShiftTemplateService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getByUserId(ownerId: string) {

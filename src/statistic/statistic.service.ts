@@ -16,7 +16,7 @@ type ShiftStatsItemHours = {
 };
 
 @Injectable()
-export class StatisticsService {
+export class StatisticService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getShiftsByTemplate(

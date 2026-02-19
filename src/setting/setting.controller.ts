@@ -1,11 +1,11 @@
 import { Controller, Patch, Body, Req, Get } from '@nestjs/common';
-import { SettingsService } from './settings.service';
+import { SettingService } from './setting.service';
 import { UpdateSalaryDto } from './dto/update-salary.dto';
 import { Request } from 'express';
 
 @Controller('settings')
-export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) {}
+export class SettingController {
+  constructor(private readonly settingsService: SettingService) {}
 
   @Patch('salary')
   async updateSalary(@Req() req: Request, @Body() dto: UpdateSalaryDto) {

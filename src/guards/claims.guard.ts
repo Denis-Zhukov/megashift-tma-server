@@ -7,16 +7,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserService } from '../user/user.service';
 
 import { REQUIRED_CLAIMS_KEY } from '../common/require-claims.decorator';
 import { AccessClaim } from '../types';
+import { AccessService } from '../access/access.service';
 
 @Injectable()
 export class ClaimsGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly userService: UserService,
+    private readonly accessService: AccessService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -47,7 +47,7 @@ export class ClaimsGuard implements CanActivate {
     let hasAtLeastOne = false;
 
     try {
-      const userClaims = await this.userService.getUserClaims(
+      const userClaims = await this.accessService.getUserClaims(
         ownerId,
         consumerId,
       );

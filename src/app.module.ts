@@ -3,10 +3,10 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
-import { ShiftTemplatesModule } from './shift-templates/shift-templates.module';
+import { ShiftTemplateModule } from './shift-template/shift-template.module';
 import { ShiftModule } from './shift/shift.module';
-import { StatisticsModule } from './statistics/statistics.module';
-import { SettingsModule } from './settings/settings.module';
+import { StatisticModule } from './statistic/statistic.module';
+import { SettingModule } from './setting/setting.module';
 import { AccessModule } from './access/access.module';
 import { InviteModule } from './invite/invite.module';
 
@@ -21,9 +21,9 @@ import { InviteModule } from './invite/invite.module';
     InviteModule,
     ProfileModule,
     ShiftModule,
-    ShiftTemplatesModule,
-    StatisticsModule,
-    SettingsModule,
+    ShiftTemplateModule,
+    StatisticModule,
+    SettingModule,
   ],
 })
 export class AppModule {}

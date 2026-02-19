@@ -1,5 +1,5 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { StatisticsService } from './statistics.service';
+import { StatisticService } from './statistic.service';
 import { ClaimsGuard } from '../guards/claims.guard';
 import { RequireClaims } from '../common/require-claims.decorator';
 import { AccessClaim } from '../types';
@@ -9,8 +9,8 @@ import { GetMonthYearDto } from './dto/get-month-year.dto';
 @UseGuards(ClaimsGuard)
 @RequireClaims(AccessClaim.READ_STATISTICS)
 @Controller('statistics')
-export class StatisticsController {
-  constructor(private readonly statisticsService: StatisticsService) {}
+export class StatisticController {
+  constructor(private readonly statisticsService: StatisticService) {}
 
   @Get('shifts')
   async getShiftStatistics(

@@ -9,7 +9,7 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ShiftTemplatesService } from './shift-templates.service';
+import { ShiftTemplateService } from './shift-template.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { ClaimsGuard } from '../guards/claims.guard';
 import { RequireClaims } from '../common/require-claims.decorator';
@@ -19,8 +19,8 @@ import { CurrentUser, AuthUser } from '../common/current-user.decorator';
 
 @UseGuards(ClaimsGuard)
 @Controller('shift-templates')
-export class ShiftTemplatesController {
-  constructor(private readonly shiftTemplatesService: ShiftTemplatesService) {}
+export class ShiftTemplateController {
+  constructor(private readonly shiftTemplatesService: ShiftTemplateService) {}
 
   @Get()
   @RequireClaims(AccessClaim.READ)
