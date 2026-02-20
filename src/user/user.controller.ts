@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { AuthUser, CurrentUser } from '../utils/decorators/current-user.decorator';
+import {
+  AuthUser,
+  CurrentUser,
+} from '../utils/decorators/current-user.decorator';
 
 @Controller('users')
 export class UserController {

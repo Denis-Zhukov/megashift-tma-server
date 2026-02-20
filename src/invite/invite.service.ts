@@ -25,7 +25,9 @@ export class InviteService {
     const currentCount = await this.redis.sCard(inviteSetKey);
 
     if (currentCount >= 5) {
-      throw new BadRequestException('Invite limit exceeded');
+      throw new BadRequestException(
+        'Достигнут лимит ссылок на приглашение, попробуйте позже',
+      );
     }
 
     const id = randomUUID();
