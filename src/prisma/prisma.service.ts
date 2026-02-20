@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PrismaService
@@ -17,9 +18,11 @@ export class PrismaService
   private reconnecting = false;
   private reconnectPromise?: Promise<void>;
 
-  constructor() {
+  constructor(configService: ConfigService) {
+    const databaseUrl = configService.get<string>('DATABASE_URL');
+
     const adapter = new PrismaPg({
-      connectionString: process.env.DATABASE_URL!,
+      connectionString: databaseUrl!,
     });
     super({ adapter });
   }
