@@ -90,7 +90,7 @@ export class ShiftTemplateService {
 
       if (count >= 10) {
         throw new BadRequestException(
-          'Maximum number of shift templates (10) reached',
+          'Достигнуто максимальное количество шаблонов - 10',
         );
       }
 

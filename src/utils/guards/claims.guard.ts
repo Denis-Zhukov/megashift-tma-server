@@ -25,8 +25,6 @@ export class ClaimsGuard implements CanActivate {
       context.getHandler(),
     );
 
-    console.log(requiredClaims);
-
     if (!requiredClaims?.length) return true;
 
     const req = context.switchToHttp().getRequest();
