@@ -20,7 +20,12 @@ async function bootstrap() {
   const server = app.getHttpAdapter().getInstance();
   server.set('trust proxy', 1);
 
-  app.use(helmet());
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
+  app.use(helmet({}));
 
   app.use(bodyParser.json({ limit: '1mb' }));
   app.use(bodyParser.urlencoded({ extended: true, limit: '100kb' }));
