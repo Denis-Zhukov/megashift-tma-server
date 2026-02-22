@@ -9,11 +9,10 @@ import {
 } from '@nestjs/common';
 import { AccessService } from './access.service';
 import {
-  AuthUser,
   CurrentUser,
+  AuthUser,
 } from '../utils/decorators/current-user.decorator';
-import { GrantAccessDto } from './dto/grant-access.dto';
-import { RevokeAccessDto } from './dto/revoke-access.dto';
+import { UpdateAccessDto } from './dto/update-access.dto';
 
 @Controller('users/access')
 export class AccessController {
@@ -29,24 +28,15 @@ export class AccessController {
     return this.accessService.getAvailableCalendars(user.id);
   }
 
-  @Post()
-  async grantAccess(
+  @Post('/update')
+  async updateAccess(
     @CurrentUser() user: AuthUser,
-    @Body() dto: GrantAccessDto,
+    @Body() dto: UpdateAccessDto,
   ) {
     if (user.id === dto.targetUserId) {
-      throw new BadRequestException('Cannot grant access to yourself');
+      throw new BadRequestException('Cannot update access for yourself');
     }
-
-    return this.accessService.grantAccess(user.id, dto);
-  }
-
-  @Delete()
-  async revokeAccess(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: RevokeAccessDto,
-  ) {
-    return this.accessService.revokeAccess(user.id, dto);
+    return this.accessService.updateAccess(user.id, dto);
   }
 
   @Delete(':targetUserId')
