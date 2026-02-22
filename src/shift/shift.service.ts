@@ -48,7 +48,7 @@ export class ShiftService {
         ownerId,
         date: { gte: utcStart, lte: utcEnd },
       },
-      orderBy: { date: 'asc' },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
