@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Bot } from 'grammy';
 import { limit } from '@grammyjs/ratelimiter';
+import { autoRetry } from '@grammyjs/auto-retry';
 import { REDIS, RedisProvider } from '../redis/redis.provider';
 
 export const TELEGRAM_BOT = Symbol('TELEGRAM_BOT');
@@ -37,6 +38,22 @@ export const telegramBotProvider = {
       },
     });
     bot.use(rateLimitMiddleware);
+
+    bot.api.config.use(
+      autoRetry({
+        maxRetryAttempts: 5,
+        maxDelaySeconds: 1,
+      }),
+    );
+
+    bot.use(async (ctx, next) => {
+      console.log('Incoming update:', JSON.stringify(ctx.update));
+      try {
+        await next();
+      } catch (err) {
+        console.error('Error handling update:', err);
+      }
+    });
 
     return bot;
   },
