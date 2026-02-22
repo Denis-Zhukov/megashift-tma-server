@@ -19,7 +19,12 @@ import { RevokeAccessDto } from './dto/revoke-access.dto';
 export class AccessController {
   constructor(private readonly accessService: AccessService) {}
 
-  @Get()
+  @Get('/granted-users')
+  async getGrantedUsers(@CurrentUser() user: AuthUser) {
+    return this.accessService.getGrantedUsers(user.id);
+  }
+
+  @Get('/available-calendars')
   async getAvailableCalendars(@CurrentUser() user: AuthUser) {
     return this.accessService.getAvailableCalendars(user.id);
   }

@@ -1,8 +1,8 @@
-import { IsArray, ArrayNotEmpty, IsEnum, IsUUID } from 'class-validator';
+import { IsArray, ArrayNotEmpty, IsEnum, IsString } from 'class-validator';
 import { AccessClaim } from '@prisma/client';
 
 export class GrantAccessDto {
-  @IsUUID()
+  @IsString()
   targetUserId: string;
 
   @IsArray()

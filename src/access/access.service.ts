@@ -115,6 +115,53 @@ export class AccessService {
     return Object.values(grouped);
   }
 
+  async getGrantedUsers(userId: string) {
+    const records = await this.prisma.userAccess.findMany({
+      where: { ownerId: userId },
+      include: {
+        grantedTo: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            patronymic: true,
+          },
+        },
+      },
+    });
+
+    const grouped = records.reduce<
+      Record<
+        string,
+        {
+          id: string;
+          name: string;
+          surname: string;
+          patronymic: string | null;
+          claims: AccessClaim[];
+        }
+      >
+    >((acc, record) => {
+      const ownerId = record.grantedTo.id;
+
+      if (!acc[ownerId]) {
+        acc[ownerId] = {
+          id: record.grantedTo.id,
+          name: record.grantedTo.name,
+          surname: record.grantedTo.surname,
+          patronymic: record.grantedTo.patronymic,
+          claims: [],
+        };
+      }
+
+      acc[ownerId].claims.push(record.claim);
+
+      return acc;
+    }, {});
+
+    return Object.values(grouped);
+  }
+
   async getUserClaims(ownerId: string, userId: string) {
     const claims = await this.prisma.userAccess.findMany({
       where: { ownerId, grantedToId: userId },

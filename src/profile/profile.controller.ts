@@ -1,13 +1,33 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { Request } from 'express';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../utils/decorators/current-user.decorator';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('profile')
+@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Get()
-  async getProfile(@Req() req: Request) {
-    return this.profileService.getProfile(req.user.id);
+  async getProfile(@CurrentUser() user: AuthUser) {
+    return this.profileService.getProfile(user.id);
+  }
+
+  @Patch()
+  async updateProfile(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.profileService.updateProfile(user.id, dto);
   }
 }
