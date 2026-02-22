@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { TmaGuard } from './utils/guards/tma.guard';
@@ -19,9 +19,14 @@ async function bootstrap() {
 
   app.use(
     rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit: 100,
-      message: 'Слишком много запросов с этого IP, попробуйте позже',
+      windowMs: 60 * 1000,
+      limit: 150,
+      handler: () => {
+        throw new HttpException(
+          'Слишком много запросов, попробуйте позже',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      },
       standardHeaders: true,
       legacyHeaders: false,
     }),
