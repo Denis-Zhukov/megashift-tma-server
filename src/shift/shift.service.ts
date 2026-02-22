@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { fromZonedTime } from 'date-fns-tz';
-import { addDays, endOfMonth, startOfMonth, subDays } from 'date-fns';
+import { addMonths, endOfMonth, startOfMonth, subMonths } from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { timeStringToUtcDate } from '../utils/time-string-to-date';
@@ -26,7 +26,7 @@ export class ShiftService {
     userId: string;
     ownerId: string;
     year: number;
-    month: number;
+    month: number; // 1–12
   }): Promise<Shift[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -34,14 +34,12 @@ export class ShiftService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    const monthStart = startOfMonth(new Date(year, month - 1));
-    const monthEnd = endOfMonth(new Date(year, month - 1));
+    const currentMonthStart = startOfMonth(new Date(year, month - 1));
+    const prevMonthStart = startOfMonth(subMonths(currentMonthStart, 1));
+    const nextMonthEnd = endOfMonth(addMonths(currentMonthStart, 1));
 
-    const localStart = subDays(monthStart, 14);
-    const localEnd = addDays(monthEnd, 14);
-
-    const utcStart = fromZonedTime(localStart, user.timezone);
-    const utcEnd = fromZonedTime(localEnd, user.timezone);
+    const utcStart = fromZonedTime(prevMonthStart, user.timezone);
+    const utcEnd = fromZonedTime(nextMonthEnd, user.timezone);
 
     return this.prisma.shift.findMany({
       where: {
