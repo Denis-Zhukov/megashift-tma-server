@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -11,6 +12,7 @@ export class ProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getProfile(userId: string) {
+    Logger.log('meow');
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {

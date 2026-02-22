@@ -10,6 +10,10 @@ import { SettingModule } from './setting/setting.module';
 import { AccessModule } from './access/access.module';
 import { InviteModule } from './invite/invite.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { WinstonLogger } from './logger/winston-logger.service';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingInterceptor } from './utils/interceptors/logging.interceptor';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -27,5 +31,13 @@ import { TelegramModule } from './telegram/telegram.module';
     SettingModule,
     TelegramModule.forRoot(),
   ],
+  providers: [
+    WinstonLogger,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
+  controllers: [AppController],
 })
 export class AppModule {}

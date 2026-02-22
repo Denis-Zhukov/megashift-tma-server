@@ -6,12 +6,14 @@ import { WinstonLogger } from './logger/winston-logger.service';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import * as bodyParser from 'body-parser';
-import { LoggingInterceptor } from './utils/interceptors/logging.interceptor';
+import * as process from 'node:process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // process.once('SIGINT', () => app.close());
-  // process.once('SIGTERM', () => app.close());
+
+  const logger = app.get(WinstonLogger);
+
+  app.useLogger(logger);
 
   const server = app.getHttpAdapter().getInstance();
   server.set('trust proxy', 1);
@@ -43,18 +45,9 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalGuards(new TmaGuard());
+  app.useGlobalGuards(new TmaGuard(['/telegram/webhook']));
 
-  const logger = new WinstonLogger();
-  app.useLogger(logger);
-  app.useGlobalInterceptors(new LoggingInterceptor(logger));
-
-  // app.enableCors({
-  //   origin: ['https://yourdomain.com'],
-  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  //   credentials: true,
-  // });
-  await app.listen(8000);
+  await app.listen(Number(process.env.PORT) || 8000);
   logger.log('Application is running on port 8000');
 }
 

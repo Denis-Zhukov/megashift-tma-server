@@ -15,6 +15,8 @@ export class TmaGuard implements CanActivate {
   private readonly BOT_TOKEN = process.env.BOT_TOKEN!;
   private readonly isDev = process.env.NODE_ENV !== 'production';
 
+  constructor(private readonly excludePaths: string[] = []) {}
+
   canActivate(context: ExecutionContext): boolean {
     if (this.isDev) {
       const req = context.switchToHttp().getRequest();
