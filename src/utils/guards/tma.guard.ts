@@ -27,7 +27,7 @@ export class TmaGuard implements CanActivate {
 
     const req = context.switchToHttp().getRequest();
 
-    if (req.path === '/telegram/webhook') {
+    if (this.excludePaths.includes(req.path)) {
       return true;
     }
 

@@ -25,6 +25,7 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '1mb' }));
   app.use(bodyParser.urlencoded({ extended: true, limit: '100kb' }));
 
+  const excludePaths = ['/telegram/webhook', '/health'];
   app.use(
     rateLimit({
       windowMs: 60 * 1000,
@@ -37,6 +38,7 @@ async function bootstrap() {
       },
       standardHeaders: true,
       legacyHeaders: false,
+      skip: (req) => excludePaths.includes(req.path),
     }),
   );
 
@@ -47,7 +49,7 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalGuards(new TmaGuard(['/telegram/webhook']));
+  app.useGlobalGuards(new TmaGuard(excludePaths));
 
   const port = config.get<string | number>('PORT', 8000);
   await app.listen(port, '0.0.0.0');
