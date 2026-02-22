@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { timeStringToUtcDate } from '../utils/time-string-to-date';
 import { AccessClaim } from '../types';
+import { DeleteTemplateDto } from './dto/delete-template.dto';
 
 type TemplatePermissionData = {
   ownerId: string;
@@ -160,10 +161,12 @@ export class ShiftTemplateService {
   async deleteTemplate({
     userId,
     templateId,
+    type,
     claims = [],
   }: {
     userId: string;
     templateId: string;
+    type: DeleteTemplateDto['type'];
     claims?: AccessClaim[];
   }) {
     const template = await this.prisma.shiftTemplate.findUnique({
@@ -181,23 +184,48 @@ export class ShiftTemplateService {
       actionType: 'delete',
     });
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.shift.updateMany({
-        where: {
-          ownerId: template.ownerId,
-          shiftTemplateId: templateId,
-          AND: [{ actualStartTime: null }, { actualEndTime: null }],
-        },
-        data: {
-          actualStartTime: template.startTime,
-          actualEndTime: template.endTime,
-        },
-      });
+    if (type === 'onlyTemplate') {
+      return this.prisma.$transaction(async (tx) => {
+        await tx.shift.updateMany({
+          where: {
+            ownerId: template.ownerId,
+            shiftTemplateId: templateId,
+            AND: [{ actualStartTime: null }, { actualEndTime: null }],
+          },
+          data: {
+            actualStartTime: template.startTime,
+            actualEndTime: template.endTime,
+          },
+        });
 
-      return tx.shiftTemplate.delete({
-        where: { id: templateId },
+        return tx.shiftTemplate.delete({
+          where: { id: templateId },
+        });
       });
-    });
+    }
+
+    if (
+      type === 'templateWithShifts' ||
+      type === 'templateWithShiftsAndEditedShifts'
+    ) {
+      return this.prisma.$transaction(async (tx) => {
+        await tx.shift.deleteMany({
+          where: {
+            ownerId: template.ownerId,
+            shiftTemplateId: templateId,
+            ...(type === 'templateWithShifts'
+              ? { AND: [{ actualStartTime: null }, { actualEndTime: null }] }
+              : {}),
+          },
+        });
+
+        return tx.shiftTemplate.delete({
+          where: { id: templateId },
+        });
+      });
+    }
+
+    return null;
   }
 
   private checkPermissions({

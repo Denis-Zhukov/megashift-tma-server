@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { ShiftTemplateService } from './shift-template.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
@@ -15,7 +16,11 @@ import { ClaimsGuard } from '../utils/guards/claims.guard';
 import { RequireClaims } from '../utils/decorators/require-claims.decorator';
 import { AccessClaim } from '../types';
 import { OwnerId } from '../utils/decorators/owner-id.decorator';
-import { CurrentUser, AuthUser } from '../utils/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../utils/decorators/current-user.decorator';
+import { DeleteTemplateDto } from './dto/delete-template.dto';
 
 @UseGuards(ClaimsGuard)
 @Controller('shift-templates')
@@ -75,11 +80,13 @@ export class ShiftTemplateController {
   delete(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: DeleteTemplateDto,
   ) {
     return this.shiftTemplatesService.deleteTemplate({
       userId: user.id,
       templateId: id,
       claims: user.claims,
+      type: query.type,
     });
   }
 }
