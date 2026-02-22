@@ -24,14 +24,19 @@ export class TmaGuard implements CanActivate {
     }
 
     const req = context.switchToHttp().getRequest();
+
+    if (req.path === '/telegram/webhook') {
+      return true;
+    }
+
     const auth: string = req.headers['authorization'];
 
     if (!auth) {
-      throw new UnauthorizedException('No Authorization header');
+      throw new UnauthorizedException('Вы вошли не из telegram mini app');
     }
 
     if (!auth.startsWith('tma ')) {
-      throw new UnauthorizedException('Not a TMA token');
+      throw new UnauthorizedException('Вы вошли не из telegram mini app');
     }
 
     const initData = auth.replace(/^tma\s/, '');
