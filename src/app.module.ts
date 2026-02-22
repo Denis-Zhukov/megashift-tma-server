@@ -9,6 +9,7 @@ import { StatisticModule } from './statistic/statistic.module';
 import { SettingModule } from './setting/setting.module';
 import { AccessModule } from './access/access.module';
 import { InviteModule } from './invite/invite.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { InviteModule } from './invite/invite.module';
     ShiftTemplateModule,
     StatisticModule,
     SettingModule,
+    TelegramModule.forRoot(),
   ],
 })
 export class AppModule {}
