@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { Bot } from 'grammy';
+import { Bot, Context } from 'grammy';
 import { limit } from '@grammyjs/ratelimiter';
 import { autoRetry } from '@grammyjs/auto-retry';
 import { REDIS, RedisProvider } from '../redis/redis.provider';
@@ -30,12 +30,12 @@ export const telegramBotProvider = {
         },
       },
       onLimitExceeded: (_, next) => {
-        console.warn(`Может не надо спамить? =)`);
         return next();
       },
       keyGenerator: (ctx) => {
         return ctx.from?.id.toString();
       },
+      keyPrefix: 'RATE_LIMITER:',
     });
     bot.use(rateLimitMiddleware);
 
