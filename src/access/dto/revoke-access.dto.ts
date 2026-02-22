@@ -1,7 +1,7 @@
 import { IsArray, ArrayNotEmpty, IsEnum, IsUUID } from 'class-validator';
 import { AccessClaim } from '@prisma/client';
 
-export class GrantAccessDto {
+export class RevokeAccessDto {
   @IsUUID()
   targetUserId: string;
 

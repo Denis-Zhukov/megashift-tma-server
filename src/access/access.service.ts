@@ -1,63 +1,116 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GrantAccessDto } from './dto/grant-access.dto';
+import { RevokeAccessDto } from './dto/revoke-access.dto';
+import { AccessClaim } from '@prisma/client';
 
 @Injectable()
 export class AccessService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async grantAccess(ownerId: string, { targetUserId, claims }: GrantAccessDto) {
-    const results = [];
-    for (const claim of claims) {
-      const access = await this.prisma.userAccess.upsert({
-        where: {
-          ownerId_grantedToId_claim: {
-            ownerId,
-            grantedToId: targetUserId,
-            claim: claim as any,
-          },
-        },
-        update: {},
-        create: { ownerId, grantedToId: targetUserId, claim: claim as any },
-      });
-      results.push(access);
+  async grantAccess(ownerId: string, dto: GrantAccessDto) {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: dto.targetUserId },
+      select: { id: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('Target user not found');
     }
-    return results;
+
+    const result = await this.prisma.userAccess.createMany({
+      data: dto.claims.map((claim) => ({
+        ownerId,
+        grantedToId: dto.targetUserId,
+        claim,
+      })),
+      skipDuplicates: true,
+    });
+
+    return {
+      grantedClaims: result.count,
+    };
+  }
+
+  async revokeAccess(ownerId: string, dto: RevokeAccessDto) {
+    const result = await this.prisma.userAccess.deleteMany({
+      where: {
+        ownerId,
+        grantedToId: dto.targetUserId,
+        claim: { in: dto.claims },
+      },
+    });
+
+    if (result.count === 0) {
+      throw new NotFoundException('No matching access records found');
+    }
+
+    return {
+      revokedClaims: result.count,
+    };
+  }
+
+  async revokeAllAccess(ownerId: string, targetUserId: string) {
+    const result = await this.prisma.userAccess.deleteMany({
+      where: {
+        ownerId,
+        grantedToId: targetUserId,
+      },
+    });
+
+    if (result.count === 0) {
+      throw new NotFoundException('No access found to revoke');
+    }
+
+    return {
+      revokedAll: true,
+      deletedRecords: result.count,
+    };
   }
 
   async getAvailableCalendars(userId: string) {
-    const accessRecords = await this.prisma.userAccess.findMany({
+    const records = await this.prisma.userAccess.findMany({
       where: { grantedToId: userId },
       include: {
         owner: {
-          select: { id: true, name: true, surname: true, patronymic: true },
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            patronymic: true,
+          },
         },
       },
     });
 
-    const grouped: Record<
-      string,
-      {
-        id: string;
-        name: string;
-        surname: string;
-        patronymic?: string;
-        claims: string[];
-      }
-    > = {};
-    for (const record of accessRecords) {
-      const owner = record.owner;
-      if (!grouped[owner.id]) {
-        grouped[owner.id] = {
-          id: owner.id,
-          name: owner.name,
-          surname: owner.surname,
-          patronymic: owner.patronymic,
+    const grouped = records.reduce<
+      Record<
+        string,
+        {
+          id: string;
+          name: string;
+          surname: string;
+          patronymic: string | null;
+          claims: AccessClaim[];
+        }
+      >
+    >((acc, record) => {
+      const ownerId = record.owner.id;
+
+      if (!acc[ownerId]) {
+        acc[ownerId] = {
+          id: record.owner.id,
+          name: record.owner.name,
+          surname: record.owner.surname,
+          patronymic: record.owner.patronymic,
           claims: [],
         };
       }
-      grouped[owner.id].claims.push(record.claim);
-    }
+
+      acc[ownerId].claims.push(record.claim);
+
+      return acc;
+    }, {});
 
     return Object.values(grouped);
   }
@@ -67,6 +120,7 @@ export class AccessService {
       where: { ownerId, grantedToId: userId },
       select: { claim: true },
     });
-    return claims.map(({ claim }) => claim);
+
+    return claims.map((c) => c.claim);
   }
 }
