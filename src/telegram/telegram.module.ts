@@ -4,6 +4,7 @@ import { TelegramAutoRegisterService } from './telegram-auto-register.service';
 import { telegramBotProvider, TELEGRAM_BOT } from './telegram-bot.provider';
 import * as path from 'path';
 import * as fs from 'fs';
+import { TelegramController } from './telegram.controller';
 
 @Module({})
 export class TelegramModule {
@@ -24,6 +25,7 @@ export class TelegramModule {
 
     return {
       module: TelegramModule,
+      controllers: [TelegramController],
       providers: [
         telegramBotProvider,
         TelegramAutoRegisterService,

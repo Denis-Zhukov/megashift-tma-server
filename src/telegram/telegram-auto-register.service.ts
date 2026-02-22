@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef, ModulesContainer } from '@nestjs/core';
 import { Bot } from 'grammy';
 import { TELEGRAM_COMMAND } from './decorators/telegram-command.decorator';
