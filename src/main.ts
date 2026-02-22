@@ -6,6 +6,7 @@ import { WinstonLogger } from './logger/winston-logger.service';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import * as bodyParser from 'body-parser';
+import { LoggingInterceptor } from './utils/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,7 +21,7 @@ async function bootstrap() {
   app.use(
     rateLimit({
       windowMs: 60 * 1000,
-      limit: 150,
+      limit: 100,
       handler: () => {
         throw new HttpException(
           'Слишком много запросов, попробуйте позже',
@@ -43,13 +44,13 @@ async function bootstrap() {
 
   const logger = new WinstonLogger();
   app.useLogger(logger);
+  app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
   // app.enableCors({
   //   origin: ['https://yourdomain.com'],
   //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   //   credentials: true,
   // });
-
   await app.listen(8000);
   logger.log('Application is running on port 8000');
 }

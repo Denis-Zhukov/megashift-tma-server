@@ -1,19 +1,35 @@
 import { format, createLogger, transports } from 'winston';
 
-const { combine, timestamp, printf, errors, colorize } = format;
+const { combine, timestamp, errors, printf, colorize, json } = format;
 
-const logFormat = printf(({ timestamp, level, message, stack, context }) => {
-  return `${timestamp} ${level.toUpperCase()} ${context ? '[' + context + '] ' : ''}${stack ?? message}`;
-});
+const isProd = process.env.NODE_ENV === 'production';
+
+const devFormat = combine(
+  colorize({ all: true }),
+  timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  errors({ stack: true }),
+  printf(({ timestamp, level, message, stack, context, ...meta }) => {
+    const ctx = context ? `[${context}] ` : '';
+    const metaString = Object.keys(meta).length
+      ? ` ${JSON.stringify(meta)}`
+      : '';
+
+    return `${timestamp} ${level} ${ctx}${stack || message}${metaString}`;
+  }),
+);
+
+const prodFormat = combine(
+  timestamp(),
+  errors({ stack: true }),
+  json(),
+);
 
 export const winstonLogger = createLogger({
   level: process.env.LOG_LEVEL ?? 'info',
-  format: combine(
-    colorize(),
-    errors({ stack: true }),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    logFormat,
-  ),
+  format: isProd ? prodFormat : devFormat,
+  defaultMeta: {
+    service: 'api-service',
+  },
   transports: [
     new transports.Console({
       handleExceptions: true,
