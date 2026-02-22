@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { TmaGuard } from './utils/guards/tma.guard';
@@ -7,11 +7,13 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import * as bodyParser from 'body-parser';
 import * as process from 'node:process';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const logger = app.get(WinstonLogger);
+  const config = app.get(ConfigService);
 
   app.useLogger(logger);
 
@@ -27,11 +29,11 @@ async function bootstrap() {
     rateLimit({
       windowMs: 60 * 1000,
       limit: 100,
-      handler: () => {
-        throw new HttpException(
-          'Слишком много запросов, попробуйте позже',
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
+      handler: (_, res) => {
+        res.status(429).json({
+          statusCode: 429,
+          message: 'Too many requests',
+        });
       },
       standardHeaders: true,
       legacyHeaders: false,
@@ -47,8 +49,9 @@ async function bootstrap() {
 
   app.useGlobalGuards(new TmaGuard(['/telegram/webhook']));
 
-  await app.listen(Number(process.env.PORT) || 8000);
-  logger.log('Application is running on port 8000');
+  const port = config.get<string | number>('PORT', 8000);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`Application is running on port ${port}`);
 }
 
 bootstrap().catch((err) => {
