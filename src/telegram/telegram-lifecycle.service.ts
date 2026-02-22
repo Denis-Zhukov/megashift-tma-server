@@ -30,11 +30,14 @@ export class TelegramLifecycleService implements OnModuleInit, OnModuleDestroy {
 
     if (this.mode === 'webhook') {
       const url = this.config.get<string>('TELEGRAM_WEBHOOK_URL');
-      console.log('TELEGRAM_WEBHOOK_URL', url);
       if (!url) throw new Error('TELEGRAM_WEBHOOK_URL missing');
 
-      await this.bot.api.setWebhook(url);
-      console.log('Telegram bot started in webhook mode');
+      const result = await this.bot.api.setWebhook(url);
+      console.log(
+        result
+          ? 'Telegram bot started in webhook mode'
+          : 'Webhook is not registered',
+      );
     }
   }
 
