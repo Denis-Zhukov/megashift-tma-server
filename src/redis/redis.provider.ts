@@ -1,7 +1,9 @@
 import { createClient } from 'redis';
 
+export const REDIS = Symbol('REDIS');
+
 export const RedisProvider = {
-  provide: 'REDIS_CLIENT',
+  provide: REDIS,
   useFactory: async () => {
     const url = process.env.REDIS_URL;
     if (!url) throw new Error('REDIS_URL is not defined');

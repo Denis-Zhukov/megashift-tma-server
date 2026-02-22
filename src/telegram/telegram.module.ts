@@ -5,6 +5,7 @@ import { telegramBotProvider, TELEGRAM_BOT } from './telegram-bot.provider';
 import * as path from 'path';
 import * as fs from 'fs';
 import { TelegramController } from './telegram.controller';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({})
 export class TelegramModule {
@@ -32,6 +33,7 @@ export class TelegramModule {
         TelegramLifecycleService,
         ...commandClasses,
       ],
+      imports: [RedisModule],
       exports: [TELEGRAM_BOT],
     };
   }

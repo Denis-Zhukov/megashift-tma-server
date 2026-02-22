@@ -10,6 +10,9 @@ import { LoggingInterceptor } from './utils/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // process.once('SIGINT', () => app.close());
+  // process.once('SIGTERM', () => app.close());
+
   const server = app.getHttpAdapter().getInstance();
   server.set('trust proxy', 1);
 

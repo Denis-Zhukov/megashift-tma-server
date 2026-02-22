@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisClientType } from 'redis';
 import { randomUUID } from 'crypto';
 import { AccessClaim } from '../types';
+import { REDIS } from '../redis/redis.provider';
 
 type InviteObject = {
   type: 'invite';
@@ -16,7 +17,7 @@ type InviteObject = {
 export class InviteService {
   constructor(
     private readonly prisma: PrismaService,
-    @Inject('REDIS_CLIENT') private readonly redis: RedisClientType,
+    @Inject(REDIS) private readonly redis: RedisClientType,
   ) {}
 
   async createInvite(inviterId: string, claims: AccessClaim[]) {
