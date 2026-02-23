@@ -15,16 +15,29 @@ async function bootstrap() {
   const logger = app.get(WinstonLogger);
   const config = app.get(ConfigService);
 
+  const isDev = config.get<string>('NODE_ENV') === 'development';
+
   app.useLogger(logger);
 
   const server = app.getHttpAdapter().getInstance();
   server.set('trust proxy', 1);
 
+  const allowedOrigins = ['https://megashift.up.railway.app'];
+
+  if (isDev) {
+    allowedOrigins.push('http://localhost:3000');
+  }
+
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   });
-
   app.use(helmet({}));
 
   app.use(bodyParser.json({ limit: '1mb' }));
