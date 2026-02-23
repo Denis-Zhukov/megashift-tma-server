@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { AccessService } from './access.service';
 import {
@@ -45,5 +46,28 @@ export class AccessController {
     @Param('targetUserId') targetUserId: string,
   ) {
     return this.accessService.revokeAllAccess(user.id, targetUserId);
+  }
+
+  @Delete('unsubscribe/:ownerUserId')
+  async unsubscribeFromCalendar(
+    @CurrentUser() user: AuthUser,
+    @Param('ownerUserId') ownerUserId: string,
+  ) {
+    if (user.id === ownerUserId) {
+      throw new BadRequestException(
+        'Cannot unsubscribe from your own calendar',
+      );
+    }
+
+    const deletedCount = await this.accessService.unsubscribe(
+      user.id,
+      ownerUserId,
+    );
+
+    if (deletedCount === 0) {
+      throw new NotFoundException('No access to unsubscribe from');
+    }
+
+    return { success: true, deletedRecords: deletedCount };
   }
 }

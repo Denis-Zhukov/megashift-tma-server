@@ -22,7 +22,7 @@ export class AccessService {
     const currentClaims = currentRecords.map((r) => r.claim);
 
     const claimsToAdd = dto.claims.filter((c) => !currentClaims.includes(c));
-    //@ts-ignore - ok
+    //@ts-expect-error - conflict Enums
     const claimsToRemove = currentClaims.filter((c) => !dto.claims.includes(c));
 
     await this.prisma.$transaction([
@@ -139,7 +139,17 @@ export class AccessService {
     return Object.values(grouped);
   }
 
-  // Получение прав конкретного пользователя
+  async unsubscribe(grantedToId: string, ownerId: string): Promise<number> {
+    const result = await this.prisma.userAccess.deleteMany({
+      where: {
+        ownerId,
+        grantedToId,
+      },
+    });
+
+    return result.count;
+  }
+
   async getUserClaims(ownerId: string, userId: string) {
     const claims = await this.prisma.userAccess.findMany({
       where: { ownerId, grantedToId: userId },
