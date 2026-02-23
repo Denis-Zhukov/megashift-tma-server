@@ -5,7 +5,7 @@ import { TmaGuard } from './utils/guards/tma.guard';
 import { WinstonLogger } from './logger/winston-logger.service';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import * as bodyParser from 'body-parser';
+import * as express from 'express';
 import * as process from 'node:process';
 import { ConfigService } from '@nestjs/config';
 
@@ -33,15 +33,15 @@ async function bootstrap() {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error('Not allowed by CORS'), false);
       }
     },
     credentials: true,
   });
   app.use(helmet({}));
 
-  app.use(bodyParser.json({ limit: '1mb' }));
-  app.use(bodyParser.urlencoded({ extended: true, limit: '100kb' }));
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
   const excludePaths = ['/telegram/webhook', '/health'];
   app.use(
