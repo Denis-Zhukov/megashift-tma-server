@@ -6,7 +6,16 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { fromZonedTime } from 'date-fns-tz';
-import { addMonths, endOfMonth, startOfMonth, subMonths } from 'date-fns';
+import {
+  addDays,
+  addMonths,
+  endOfMonth,
+  endOfWeek,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+  subMonths,
+} from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { timeStringToUtcDate } from '../utils/time-string-to-date';
@@ -36,10 +45,12 @@ export class ShiftService {
 
     const currentMonthStart = startOfMonth(new Date(year, month - 1));
     const prevMonthStart = startOfMonth(subMonths(currentMonthStart, 1));
-    const nextMonthEnd = endOfMonth(addMonths(currentMonthStart, 1));
+    const calendarStart = startOfWeek(prevMonthStart, { weekStartsOn: 1 });
+    const totalDays = 7 * 6 * 3;
+    const exactEnd = addDays(calendarStart, totalDays - 1);
 
-    const utcStart = fromZonedTime(prevMonthStart, user.timezone);
-    const utcEnd = fromZonedTime(nextMonthEnd, user.timezone);
+    const utcStart = fromZonedTime(calendarStart, user.timezone);
+    const utcEnd = fromZonedTime(exactEnd, user.timezone);
 
     return this.prisma.shift.findMany({
       where: {
