@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
+import { IsOptional, IsString, MinLength, MaxLength, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class UpdateProfileDto {
@@ -21,4 +21,12 @@ export class UpdateProfileDto {
   @MaxLength(50)
   @Transform(({ value }) => value?.trim())
   patronymic?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/(^[a-zA-Z]+\/[a-zA-Z_]+$|UTC)/, {
+    message: 'Timezone must be a valid IANA string, e.g. "Europe/Moscow"',
+  })
+  @Transform(({ value }) => value?.trim())
+  timezone: string = 'UTC';
 }

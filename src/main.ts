@@ -6,7 +6,6 @@ import { WinstonLogger } from './logger/winston-logger.service';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import * as express from 'express';
-import * as process from 'node:process';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {

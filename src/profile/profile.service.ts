@@ -21,6 +21,7 @@ export class ProfileService {
         surname: true,
         patronymic: true,
         createdAt: true,
+        timezone: true,
       },
     });
 
@@ -45,6 +46,7 @@ export class ProfileService {
         surname: true,
         patronymic: true,
         createdAt: true,
+        timezone: true,
       },
     });
   }
