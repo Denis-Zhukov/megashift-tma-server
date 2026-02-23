@@ -8,12 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { fromZonedTime } from 'date-fns-tz';
 import {
   addDays,
-  addMonths,
-  endOfMonth,
-  endOfWeek,
   startOfMonth,
   startOfWeek,
-  subDays,
   subMonths,
 } from 'date-fns';
 import { CreateShiftDto } from './dto/create-shift.dto';
