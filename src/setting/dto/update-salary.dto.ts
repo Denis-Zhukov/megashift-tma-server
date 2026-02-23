@@ -1,5 +1,6 @@
-import { IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Currency } from '@prisma/client';
 
 export enum SalaryType {
   HOURLY = 'HOURLY',
@@ -23,4 +24,8 @@ export class UpdateSalaryDto {
   @IsNumber({}, { message: 'Salary должен быть числом' })
   @Min(0, { message: 'maxSalary не может быть отрицательным' })
   maxSalary: number;
+
+  @IsOptional()
+  @IsString()
+  currency: Currency;
 }

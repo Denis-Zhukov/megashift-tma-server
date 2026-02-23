@@ -13,6 +13,7 @@ export class SettingService {
         salary: dto.salary,
         typeSalary: dto.typeSalary,
         maxSalary: dto.maxSalary ?? null,
+        currency: dto.currency,
       },
     });
   }
@@ -24,6 +25,7 @@ export class SettingService {
         salary: true,
         typeSalary: true,
         maxSalary: true,
+        currency: true,
       },
     });
   }

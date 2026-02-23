@@ -4,6 +4,14 @@ enum SalaryType {
   MONTHLY
 }
 
+enum Currency {
+  RUB
+  USD
+  BYN
+  EUR
+  KZT
+}
+
 model User {
   id         String  @id
   name       String
@@ -14,7 +22,8 @@ model User {
 
   salary     Float?
   typeSalary SalaryType?
-  maxSalary  Float       @default(1)
+  maxSalary  Float?
+  currency   Currency?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
