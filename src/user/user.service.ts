@@ -15,6 +15,7 @@ export class UserService {
         surname: true,
         patronymic: true,
         timezone: true,
+        currency: true,
       },
     });
   }
