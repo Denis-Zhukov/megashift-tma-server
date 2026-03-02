@@ -15,9 +15,117 @@ type ShiftStatsItemHours = {
   hours: number;
 };
 
+type SalaryStats = {
+  salary: number;
+  typeSalary: string;
+  maxSalary: number | null;
+};
+
+type CombinedStats = {
+  shifts: ShiftStatsItemCount[];
+  hours: ShiftStatsItemHours[];
+  salary: SalaryStats;
+};
+
 @Injectable()
 export class StatisticService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getCombinedStats(
+    userId: string,
+    year: number,
+    month: number,
+  ): Promise<CombinedStats> {
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const endDate = new Date(Date.UTC(year, month, 1));
+
+    const [shifts, user, templates] = await Promise.all([
+      this.prisma.shift.findMany({
+        where: {
+          ownerId: userId,
+          date: { gte: startDate, lt: endDate },
+        },
+        include: { shiftTemplate: true },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { salary: true, typeSalary: true, maxSalary: true },
+      }),
+      this.prisma.shiftTemplate.findMany({
+        where: { ownerId: userId },
+        select: { id: true, label: true, color: true },
+        orderBy: { label: 'asc' },
+      }),
+    ]);
+
+    const templatesMap = new Map(templates.map((t) => [t.id, t]));
+    const countMap = new Map<string | null, number>();
+    const hoursMap = new Map<string | null, number>();
+
+    for (const shift of shifts) {
+      const templateId = shift.shiftTemplateId ?? null;
+      countMap.set(templateId, (countMap.get(templateId) ?? 0) + 1);
+
+      const start = shift.actualStartTime ?? shift.shiftTemplate?.startTime;
+      const end = shift.actualEndTime ?? shift.shiftTemplate?.endTime;
+      const hours =
+        start && end ? (end.getTime() - start.getTime()) / (1000 * 60 * 60) : 0;
+      hoursMap.set(templateId, (hoursMap.get(templateId) ?? 0) + hours);
+    }
+
+    const shiftStats: ShiftStatsItemCount[] = templates.map((t) => ({
+      id: t.id,
+      color: t.color,
+      shiftName: t.label,
+      count: countMap.get(t.id) ?? 0,
+    }));
+    if (countMap.has(null)) {
+      shiftStats.push({
+        id: '0',
+        color: '#ffbbee',
+        shiftName: '(Без шаблона смены)',
+        count: countMap.get(null) ?? 0,
+      });
+    }
+
+    const hoursStats: ShiftStatsItemHours[] = templates.map((t) => ({
+      id: t.id,
+      color: t.color,
+      shiftName: t.label,
+      hours: hoursMap.get(t.id) ?? 0,
+    }));
+    if (hoursMap.has(null)) {
+      hoursStats.push({
+        id: '0',
+        color: '#ffbbee',
+        shiftName: '(Без названия)',
+        hours: hoursMap.get(null) ?? 0,
+      });
+    }
+
+    let totalSalary = 0;
+    if (user?.salary && user?.typeSalary) {
+      if (user.typeSalary === 'MONTHLY') {
+        totalSalary = user.salary;
+      } else if (user.typeSalary === 'SHIFT') {
+        totalSalary = shifts.length * user.salary;
+      } else if (user.typeSalary === 'HOURLY') {
+        totalSalary =
+          Array.from(hoursMap.values()).reduce((a, b) => a + b, 0) *
+          user.salary;
+      }
+    }
+
+    return {
+      shifts: shiftStats,
+      hours: hoursStats,
+      salary: {
+        salary: totalSalary,
+        typeSalary: user?.typeSalary ?? 'UNKNOWN',
+        maxSalary: user?.maxSalary ?? null,
+      },
+    };
+  }
 
   async getShiftsByTemplate(
     userId: string,

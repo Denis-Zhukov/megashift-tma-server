@@ -46,4 +46,17 @@ export class StatisticController {
       query.month,
     );
   }
+
+  @RequireClaims(AccessClaim.READ_STATISTICS)
+  @Get('combined')
+  async getCombinedStatistics(
+    @OwnerId() ownerId: string,
+    @Query() query: GetMonthYearDto,
+  ) {
+    return this.statisticsService.getCombinedStats(
+      ownerId,
+      query.year,
+      query.month,
+    );
+  }
 }
